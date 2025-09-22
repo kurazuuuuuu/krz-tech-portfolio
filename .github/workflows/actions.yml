@@ -7,7 +7,7 @@ on:
 
 jobs:
     build:
-        runs-on: ci-krz-tech
+        runs-on: ci-krz-tech-portfolio
         steps:
         - name: Checkout code
           uses: actions/checkout@v4
