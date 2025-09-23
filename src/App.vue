@@ -25,15 +25,64 @@ export default {
 </script>
 
 <style>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
 body {
-  font-family: Meiryo, sans-serif;
+  font-family: 'DotGothic16', monospace;
   background-image: url('/img/vrc_background.webp');
   background-repeat: no-repeat;
   background-size: cover;
   background-position: center center;
   background-attachment: fixed;
-  background-color: rgba(255, 255, 255, 0.6);
-  background-blend-mode: lighten;
-  margin: 0;
+  min-height: 100vh;
+  color: #2d5a2d;
+  line-height: 1.4;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  position: relative;
+}
+
+body::before {
+  content: '';
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: 
+    radial-gradient(circle at 25% 25%, rgba(168, 230, 163, 0.3) 2px, transparent 2px),
+    radial-gradient(circle at 75% 75%, rgba(168, 230, 163, 0.3) 2px, transparent 2px),
+    rgba(232, 245, 232, 0.7);
+  background-size: 20px 20px, 20px 20px, 100% 100%;
+  background-position: 0 0, 10px 10px, 0 0;
+  pointer-events: none;
+  z-index: -1;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+/* ドット風のスクロールバー */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #e8f5e8;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #7db87d;
+  border-radius: 0;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #6ba86b;
 }
 </style>
