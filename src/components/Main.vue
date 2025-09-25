@@ -17,7 +17,6 @@
         </div>
         <div class="hero-actions">
           <a @click="scrollTo('projects')" class="btn btn-primary">View Projects</a>
-          <a @click="scrollTo('contact')" class="btn btn-secondary">Get in Touch</a>
         </div>
       </div>
     </section>
@@ -25,7 +24,7 @@
     <!-- Projects Section -->
     <section id="projects" class="projects">
       <div class="container">
-        <h2 class="section-title animate-on-scroll">Featured Projects</h2>
+        <h2 class="section-title animate-on-scroll">Projects</h2>
         <div v-if="projects.length === 0" class="no-projects animate-on-scroll">
           <h3>Coming Soon(´・ω・｀)</h3>
           <p>返事がない...</p>
