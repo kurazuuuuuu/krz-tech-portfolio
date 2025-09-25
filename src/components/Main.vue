@@ -2,20 +2,22 @@
   <main>
     <!-- Hero Section -->
     <section id="about" class="hero">
-      <div class="hero-content">
+      <div class="hero-content animate-on-scroll">
         <div class="hero-avatar">
-          <img src="/img/icon.webp" alt="Profile" class="avatar">
+          <img src="/img/icon.webp" alt="Profile" class="avatar" loading="lazy">
         </div>
         <h1 class="hero-title">{{ profile.name }}</h1>
         <p class="hero-subtitle">{{ profile.description }}</p>
         <div class="hero-skills">
-          <span v-for="skill in profile.skills" :key="skill" class="skill-tag">
+          <span v-for="(skill, index) in profile.skills" :key="skill" 
+                class="skill-tag" 
+                :style="{ animationDelay: (1.5 + index * 0.1) + 's' }">
             {{ skill }}
           </span>
         </div>
         <div class="hero-actions">
-          <a href="#projects" class="btn btn-primary">View Projects</a>
-          <a href="#contact" class="btn btn-secondary">Get in Touch</a>
+          <a @click="scrollTo('projects')" class="btn btn-primary">View Projects</a>
+          <a @click="scrollTo('contact')" class="btn btn-secondary">Get in Touch</a>
         </div>
       </div>
     </section>
@@ -23,13 +25,13 @@
     <!-- Projects Section -->
     <section id="projects" class="projects">
       <div class="container">
-        <h2 class="section-title">Featured Projects</h2>
-        <div v-if="projects.length === 0" class="no-projects">
+        <h2 class="section-title animate-on-scroll">Featured Projects</h2>
+        <div v-if="projects.length === 0" class="no-projects animate-on-scroll">
           <h3>Coming Soon(´・ω・｀)</h3>
           <p>返事がない...</p>
         </div>
         <div v-else class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card">
+          <div v-for="project in projects" :key="project.id" class="project-card animate-on-scroll">
             <div class="project-image">
               <div class="project-placeholder">{{ project.name.charAt(0) }}</div>
             </div>
@@ -54,11 +56,14 @@
     <!-- Contact Section -->
     <section id="contact" class="contact">
       <div class="container">
-        <h2 class="section-title">Let's Connect</h2>
-        <div class="contact-content">
+        <h2 class="section-title animate-on-scroll">Let's Connect</h2>
+        <div class="contact-content animate-on-scroll">
           <p class="contact-text">どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！</p>
           <div class="social-links">
-            <a v-for="link in socialLinks" :key="link.name" :href="link.url" class="social-link" target="_blank">
+            <a v-for="link in socialLinks" :key="link.name" 
+               :href="link.url" 
+               class="social-link" 
+               target="_blank">
               <span v-html="link.icon"></span>
               {{ link.name }}
             </a>
@@ -79,17 +84,7 @@ export default {
         description: 'Backend & Infrastructure Enginner',
         skills: ['VR / XR', 'Python', 'JavaScript', 'Linux', "Network"]
       },
-
-      projects: [
-        // {
-        //   id: 1,
-        //   name: 'Portfolio Website',
-        //   description: 'A modern, responsive portfolio built with Vue.js and modern CSS techniques.',
-        //   technologies: ['Vue.js', 'CSS3', 'JavaScript'],
-        //   github: 'https://github.com/kurazuuuuuu/',
-        //   demo: null
-        // },
-      ],
+      projects: [],
       socialLinks: [
         { 
           name: 'Twitter', 
@@ -104,7 +99,33 @@ export default {
       ]
     }
   },
+  mounted() {
+    this.setupScrollAnimations()
+  },
+  methods: {
+    setupScrollAnimations() {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in')
+          }
+        })
+      }, { threshold: 0.1 })
 
+      document.querySelectorAll('.animate-on-scroll').forEach(el => {
+        observer.observe(el)
+      })
+    },
+    scrollTo(elementId) {
+      const element = document.getElementById(elementId)
+      if (element) {
+        element.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start'
+        })
+      }
+    }
+  }
 }
 </script>
 
@@ -113,6 +134,29 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
+}
+
+/* Animations */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-on-scroll {
+  opacity: 0;
+  transform: translateY(30px);
+  transition: all 0.6s ease;
+}
+
+.animate-on-scroll.animate-in {
+  opacity: 1;
+  transform: translateY(0);
 }
 
 /* Hero Section */
@@ -180,6 +224,8 @@ export default {
   font-weight: 500;
   transition: all 0.3s ease;
   box-shadow: 2px 2px 0 #6ba86b;
+  animation: fadeInUp 0.6s ease forwards;
+  opacity: 0;
 }
 
 .skill-tag:hover {
@@ -204,6 +250,7 @@ export default {
   transition: all 0.3s ease;
   border: 2px solid transparent;
   display: inline-block;
+  cursor: pointer;
 }
 
 .btn-primary {
@@ -351,11 +398,6 @@ export default {
   box-shadow: 4px 4px 0 #a8e6a3;
   max-width: 500px;
   margin: 0 auto;
-}
-
-.no-projects-icon {
-  font-size: 4rem;
-  margin-bottom: 1rem;
 }
 
 .no-projects h3 {

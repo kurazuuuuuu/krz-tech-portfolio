@@ -1,5 +1,6 @@
 <template>
   <div id="app">
+    <div class="progress-bar" :style="{ width: scrollProgress + '%' }"></div>
     <IntroAnimation />
     <Header />
     <Main />
@@ -20,6 +21,24 @@ export default {
     Header,
     Main,
     Footer
+  },
+  data() {
+    return {
+      scrollProgress: 0
+    }
+  },
+  mounted() {
+    window.addEventListener('scroll', this.updateScrollProgress)
+  },
+  beforeUnmount() {
+    window.removeEventListener('scroll', this.updateScrollProgress)
+  },
+  methods: {
+    updateScrollProgress() {
+      const scrollTop = window.pageYOffset
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight
+      this.scrollProgress = (scrollTop / docHeight) * 100
+    }
   }
 }
 </script>
@@ -29,6 +48,17 @@ export default {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #7db87d, #a8e6a3);
+  z-index: 9999;
+  transition: width 0.1s ease;
+  box-shadow: 0 2px 4px rgba(125, 184, 125, 0.3);
 }
 
 body {
