@@ -3,7 +3,6 @@ kind: Kustomization
 resources:
 - deployment.yaml
 - service.yaml
-
 images:
 - name: ghcr.io/kurazuuuuuu/krz-tech-portfolio
-  newTag: latest
+  newTag: ca91f7e54f7b9525b59dc65e52f5b1fd8dd6f345
