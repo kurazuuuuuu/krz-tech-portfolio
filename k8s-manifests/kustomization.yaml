@@ -6,4 +6,4 @@ resources:
 
 images:
 - name: ghcr.io/kurazuuuuuu/krz-tech-portfolio
-  newTag: 35ff15231b55ca7623cf1ccd91a02a1f2cd532a8
+  newTag: latest
