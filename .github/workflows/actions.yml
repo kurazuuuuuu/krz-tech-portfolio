@@ -2,6 +2,8 @@ name: CI
 on:
     push: 
         branches: [main]
+        paths-ignore:
+        - 'k8s-manifests/**'
     pull_request:
         branches: [main]
 
@@ -12,7 +14,6 @@ permissions:
 jobs:
     build:
         runs-on: ci-krz-tech-portfolio
-        if: "!contains(github.event.head_commit.message, '[skip ci]')"
         steps:
         - name: Checkout code
           uses: actions/checkout@v4
