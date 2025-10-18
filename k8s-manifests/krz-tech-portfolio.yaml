@@ -12,8 +12,8 @@ metadata:
     argocd-image-updater.argoproj.io/git-repository: https://github.com/kurazuuuuuu/krz-tech-portfolio
     argocd-image-updater.argoproj.io/write-back-target: kustomization
     argocd-image-updater.argoproj.io/git-repository-credentials: argocd:git-creds
-    argocd-image-updater.argoproj.io/git-branch: image-updates
-    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
+    argocd-image-updater.argoproj.io/git-branch: main
+    argocd-image-updater.argoproj.io/git-commit-message: "build: automatic update of krz-tech-portfolio [skip ci]"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
