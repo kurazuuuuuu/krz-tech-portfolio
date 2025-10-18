@@ -13,6 +13,7 @@ metadata:
     argocd-image-updater.argoproj.io/write-back-target: kustomization
     argocd-image-updater.argoproj.io/git-repository-credentials: argocd:git-creds
     argocd-image-updater.argoproj.io/git-branch: main
+    argocd.argoproj.io/sync-options: SkipDryRunOnMissingResource=true
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -27,6 +28,10 @@ spec:
     server: https://kubernetes.default.svc
     namespace: argocd-prod
   ignoreDifferences:
+  - group: kustomize.config.k8s.io
+    kind: Kustomization
+    jsonPointers:
+    - /images
   - group: apps
     kind: Deployment
     jsonPointers:
