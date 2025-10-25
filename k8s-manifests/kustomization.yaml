@@ -5,4 +5,4 @@ resources:
 - service.yaml
 images:
 - name: ghcr.io/kurazuuuuuu/krz-tech-portfolio
-  newTag: latest
+  newTag: 77903dc07dc9813d6469bf2b98364ec2c09fcca5
