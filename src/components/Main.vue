@@ -58,11 +58,17 @@
         <h2 class="section-title animate-on-scroll">Let's Connect</h2>
         <div class="contact-content animate-on-scroll">
           <p class="contact-text">どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！</p>
+          <a href="mailto:contact@krz-tech.net" class="contact-email">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M20 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
+            </svg>
+            contact@krz-tech.net
+          </a>
           <div class="social-links">
             <a v-for="link in socialLinks" :key="link.name" 
-               :href="link.url" 
-               class="social-link" 
-               target="_blank">
+                :href="link.url" 
+                class="social-link" 
+                target="_blank">
               <span v-html="link.icon"></span>
               {{ link.name }}
             </a>
@@ -427,6 +433,28 @@ export default {
   margin-left: auto;
   margin-right: auto;
   text-shadow: 1px 1px 0 #a8e6a3;
+}
+
+.contact-email {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: #2d5a2d;
+  text-decoration: none;
+  padding: 1rem 2rem;
+  margin-bottom: 2rem;
+  background: #d4f1d4;
+  border: 3px solid #7db87d;
+  box-shadow: 3px 3px 0 #a8e6a3;
+  transition: all 0.3s ease;
+}
+
+.contact-email:hover {
+  background: #a8e6a3;
+  transform: translate(-1px, -1px);
+  box-shadow: 4px 4px 0 #7db87d;
 }
 
 .social-links {
