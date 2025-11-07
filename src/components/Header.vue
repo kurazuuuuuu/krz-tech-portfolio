@@ -8,7 +8,10 @@
         <a @click="scrollTo('about')" class="nav-link">About</a>
         <a @click="scrollTo('projects')" class="nav-link">Projects</a>
         <a @click="scrollTo('contact')" class="nav-link">Contact</a>
-        <a href="https://github.com/kurazuuuuuu/" class="nav-link github-link" target="_blank">
+        <a href="https://foto.krz-tech.net/" class="nav-link icon-link" target="_blank">
+          <PhotoIcon :size="20"></PhotoIcon>
+        </a>
+        <a href="https://github.com/kurazuuuuuu/" class="nav-link icon-link" target="_blank">
           <BrandGithubIcon :size="20"></BrandGithubIcon>
         </a>
       </div>
@@ -17,12 +20,12 @@
 </template>
 
 <script>
-import { BrandGithubIcon } from 'vue-tabler-icons'
+import { BrandGithubIcon, PhotoIcon } from 'vue-tabler-icons'
 
 export default {
   name: 'Header',
   components: {
-    BrandGithubIcon
+    BrandGithubIcon, PhotoIcon
   },
   methods: {
     scrollTo(elementId) {
@@ -89,7 +92,7 @@ header {
   transform: translateY(-2px);
 }
 
-.github-link {
+.icon-link {
   display: flex;
   align-items: center;
   gap: 0.5rem;
