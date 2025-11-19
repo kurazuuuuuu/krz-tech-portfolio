@@ -31,8 +31,8 @@
         </div>
         <div v-else class="projects-grid">
           <div v-for="project in projects" :key="project.id" class="project-card animate-on-scroll" ref="projectCards">
-            <div class="project-image">
-              <div class="project-placeholder">{{ project.name.charAt(0) }}</div>
+            <div class="project-images">
+              <img :src="`/img/projects/${project.id}.webp`" alt="Project" class="project-image" loading="lazy">
             </div>
             <div class="project-content">
               <h3>{{ project.name }}</h3>
@@ -43,8 +43,8 @@
                 </span>
               </div>
               <div class="project-links">
-                <a :href="project.github" class="project-link" target="_blank">GitHub</a>
-                <a v-if="project.demo" :href="project.demo" class="project-link" target="_blank">Live Demo</a>
+                <a :href="project.deploy_url" class="project-link" target="_blank"><HomeIcon /></a>
+                <a :href="project.github_url_url" class="project-link" target="_blank"><BrandGithubIcon /></a>
               </div>
             </div>
           </div>
@@ -78,14 +78,15 @@
 </template>
 
 <script>
-import { BrandTwitterIcon, BrandGithubIcon, BookIcon, MailIcon } from 'vue-tabler-icons'
-import VanillaTilt from 'vanilla-tilt'
+import { HomeIcon, BrandTwitterIcon, BrandGithubIcon, BrandDiscordIcon, BookIcon, MailIcon } from 'vue-tabler-icons'
 
 export default {
   name: 'Main',
   components: {
+    HomeIcon,
     BrandTwitterIcon,
     BrandGithubIcon,
+    BrandDiscordIcon,
     BookIcon,
     MailIcon
   },
@@ -96,7 +97,15 @@ export default {
         description: 'Backend & Infrastructure Enginner',
         skills: ['VR / XR', 'Python', 'JavaScript', 'Linux', "Network"]
       },
-      projects: [],
+      projects: [
+        {
+          id: 'github-fairy',
+          name: 'Fairy',
+          technologies: ['Discord.py', 'Vue.js', 'Gemini 2.5 Flash Lite', 'MongoDB'],
+          deploy_url: 'https://fairy.krz-tech.net',
+          github_url: 'https://github.com/kurazuuuuuu/fairy'
+        }
+      ],
       socialLinks: [
         { 
           name: 'Twitter', 
@@ -119,10 +128,39 @@ export default {
   mounted() {
     this.setupScrollAnimations()
     this.$nextTick(() => {
-      this.setupTiltEffect()
+      // this.setupTiltEffect() // Removed per user request
     })
+    this.updateProjectDescriptions()
   },
   methods: {
+    async fetchGitHubDescription(githubUrl) {
+      try {
+        const match = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+        if (!match) return null;
+
+        const owner = match[1];
+        const repo = match[2];
+        
+        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+        if (!response.ok) throw new Error('GitHub API request failed');
+        
+        const data = await response.json();
+        return data.description;
+      } catch (error) {
+        console.warn('Failed to fetch GitHub description:', error);
+        return null;
+      }
+    },
+    async updateProjectDescriptions() {
+      for (const project of this.projects) {
+        if (project.github_url) {
+          const description = await this.fetchGitHubDescription(project.github_url);
+          if (description) {
+            project.description = description;
+          }
+        }
+      }
+    },
     setupScrollAnimations() {
       const observer = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
@@ -145,17 +183,6 @@ export default {
         })
       }
     },
-    setupTiltEffect() {
-      if (this.$refs.projectCards) {
-        VanillaTilt.init(this.$refs.projectCards, {
-          max: 15,
-          speed: 400,
-          glare: true,
-          "max-glare": 0.5,
-          scale: 1.05
-        })
-      }
-    }
   }
 }
 </script>
@@ -342,24 +369,20 @@ export default {
   background: #d4f1d4;
   padding: 2rem;
   border: 3px solid #7db87d;
-  transition: all 0.1s ease; /* Faster transition for tilt */
-  box-shadow: 4px 4px 0 #a8e6a3;
-  transform-style: preserve-3d;
-  transform: perspective(1000px);
+  transition: all 0.1s ease;
 }
 
 .project-card:hover {
-  /* transform: translate(-2px, -2px); Handled by vanilla-tilt */
   box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.2);
   background: #c0edc0;
 }
 
-.project-image, .project-content {
-  transform: translateZ(20px); /* Pop out effect */
-}
-
 .project-image {
   margin-bottom: 1.5rem;
+  border-radius: 25%;
+  width: 100px;
+  height: 100px;
+  border: 3px solid #7db87d;
 }
 
 .project-placeholder {
@@ -379,7 +402,7 @@ export default {
 
 .project-content h3 {
   color: #2d5a2d;
-  font-size: 1.5rem;
+  font-size: 1.75rem;
   margin-bottom: 1rem;
   font-weight: 600;
   text-shadow: 1px 1px 0 #a8e6a3;
@@ -401,7 +424,7 @@ export default {
 .tech-tag {
   background: #a8e6a3;
   color: #2d5a2d;
-  padding: 0.25rem 0.75rem;
+  padding: 0.3rem 0.5rem;
   border: 1px solid #7db87d;
   font-size: 0.8rem;
   font-weight: 500;
@@ -416,11 +439,8 @@ export default {
   color: #2d5a2d;
   text-decoration: none;
   font-weight: 500;
-  padding: 0.5rem 1rem;
-  border: 2px solid #7db87d;
+  padding: 0.25rem 0.5rem;
   transition: all 0.3s ease;
-  background: #a8e6a3;
-  box-shadow: 2px 2px 0 #6ba86b;
 }
 
 .project-link:hover {
