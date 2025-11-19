@@ -21,6 +21,25 @@
       </div>
     </section>
 
+    <!-- Introduction Section-->
+    <section id="introduction" class="introduction">
+      <div class="container">
+        <div class="terminal-window animate-on-scroll">
+          <div class="terminal-header">
+            <div class="terminal-buttons">
+              <span class="terminal-button red"></span>
+              <span class="terminal-button yellow"></span>
+              <span class="terminal-button green"></span>
+            </div>
+            <div class="terminal-title">INTRODUCTION.txt</div>
+          </div>
+          <div class="terminal-body">
+            <p class="terminal-text">{{ introduction }}</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
     <!-- Projects Section -->
     <section id="projects" class="projects">
       <div class="container">
@@ -97,6 +116,7 @@ export default {
         description: 'Backend & Infrastructure Enginner',
         skills: ['VR / XR', 'Python', 'JavaScript', 'Linux', "Network"]
       },
+      introduction: 'こんにちは、くらずと申します。福岡の情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスは全てその自宅鯖にデプロイしています。\nイベントに現れた時はよろしくお願いします！',
       projects: [
         {
           id: 'github-fairy',
@@ -219,7 +239,7 @@ export default {
 
 /* Hero Section */
 .hero {
-  min-height: 100vh;
+  min-height: 80vh;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -339,7 +359,69 @@ export default {
   background: rgba(125, 184, 125, 0.2);
   border-color: #6ba86b;
   transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 #a8e6a3;
+  
+}
+
+
+/* Introduction Section */
+.introduction {
+  padding-bottom: 10rem;
+}
+
+.terminal-window {
+  max-width: 800px;
+  margin: 0 auto;
+  background: #1a3d1a;
+  border: 3px solid #7db87d;
+  border-radius: 8px;
+  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.terminal-header {
+  background: #7db87d;
+  padding: 0.5rem 1rem;
+  display: flex;
+  align-items: center;
+  border-bottom: 3px solid #5a9a5a;
+}
+
+.terminal-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.terminal-button {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 1px solid rgba(0, 0, 0, 0.2);
+}
+
+.terminal-button.red { background: #ff5f56; }
+.terminal-button.yellow { background: #ffbd2e; }
+.terminal-button.green { background: #27c93f; }
+
+.terminal-title {
+  flex-grow: 1;
+  text-align: center;
+  font-weight: bold;
+  color: #1a3d1a;
+  margin-right: 40px; /* Balance the buttons */
+}
+
+.terminal-body {
+  padding: 2rem;
+  background: #1a3d1a;
+}
+
+.terminal-text {
+  font-size: 1rem;
+  color: #a8e6a3;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  margin: 0;
+  text-align: left;
 }
 
 /* Projects Section */
