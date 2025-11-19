@@ -89,7 +89,17 @@ export default {
             }
           },
           shape: {
-            type: ["triangle", "edge", "circle"], // edge renders as square
+            type: ["triangle", "edge", "polygon"], // edge renders as square
+            options: {
+              polygon: [
+                {
+                  sides: 5
+                },
+                {
+                  sides: 6
+                }
+              ]
+            }
           },
           size: {
             value: { min: 10, max: 30 },
