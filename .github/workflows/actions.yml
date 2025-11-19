@@ -4,8 +4,6 @@ on:
         branches: [main]
         paths-ignore:
         - 'k8s-manifests/**'
-    pull_request:
-        branches: [main]
 
 permissions:
   contents: read
