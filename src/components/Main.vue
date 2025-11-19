@@ -63,7 +63,7 @@
               </div>
               <div class="project-links">
                 <a :href="project.deploy_url" class="project-link" target="_blank"><HomeIcon /></a>
-                <a :href="project.github_url_url" class="project-link" target="_blank"><BrandGithubIcon /></a>
+                <a :href="project.github_url" class="project-link" target="_blank"><BrandGithubIcon /></a>
               </div>
             </div>
           </div>
