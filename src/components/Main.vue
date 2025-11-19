@@ -30,7 +30,7 @@
           <p>返事がない...</p>
         </div>
         <div v-else class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card animate-on-scroll">
+          <div v-for="project in projects" :key="project.id" class="project-card animate-on-scroll" ref="projectCards">
             <div class="project-image">
               <div class="project-placeholder">{{ project.name.charAt(0) }}</div>
             </div>
@@ -79,6 +79,7 @@
 
 <script>
 import { BrandTwitterIcon, BrandGithubIcon, BookIcon, MailIcon } from 'vue-tabler-icons'
+import VanillaTilt from 'vanilla-tilt'
 
 export default {
   name: 'Main',
@@ -117,6 +118,9 @@ export default {
   },
   mounted() {
     this.setupScrollAnimations()
+    this.$nextTick(() => {
+      this.setupTiltEffect()
+    })
   },
   methods: {
     setupScrollAnimations() {
@@ -138,6 +142,17 @@ export default {
         element.scrollIntoView({
           behavior: 'smooth',
           block: 'start'
+        })
+      }
+    },
+    setupTiltEffect() {
+      if (this.$refs.projectCards) {
+        VanillaTilt.init(this.$refs.projectCards, {
+          max: 15,
+          speed: 400,
+          glare: true,
+          "max-glare": 0.5,
+          scale: 1.05
         })
       }
     }
@@ -213,7 +228,10 @@ export default {
   color: #2d5a2d;
   margin-bottom: 1rem;
   text-shadow: 2px 2px 0 #a8e6a3, 4px 4px 0 #7db87d;
+  position: relative;
 }
+
+
 
 .hero-subtitle {
   font-size: 1.5rem;
@@ -324,14 +342,20 @@ export default {
   background: #d4f1d4;
   padding: 2rem;
   border: 3px solid #7db87d;
-  transition: all 0.3s ease;
+  transition: all 0.1s ease; /* Faster transition for tilt */
   box-shadow: 4px 4px 0 #a8e6a3;
+  transform-style: preserve-3d;
+  transform: perspective(1000px);
 }
 
 .project-card:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 #a8e6a3;
+  /* transform: translate(-2px, -2px); Handled by vanilla-tilt */
+  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.2);
   background: #c0edc0;
+}
+
+.project-image, .project-content {
+  transform: translateZ(20px); /* Pop out effect */
 }
 
 .project-image {

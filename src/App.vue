@@ -1,20 +1,7 @@
 <template>
   <div id="app">
     <div class="progress-bar" :style="{ width: scrollProgress + '%' }"></div>
-    <div class="geometric-shapes">
-      <div 
-        v-for="(shape, index) in shapes" 
-        :key="index"
-        :class="['shape', shape.type]"
-        :style="{ 
-          left: shape.x + '%',
-          top: shape.baseY + '%',
-          transform: `translateY(${shape.y}px) rotate(${shape.rotation}deg)`,
-          opacity: shape.opacity,
-          color: shape.color
-        }">
-      </div>
-    </div>
+    <ParticlesBackground />
     <IntroAnimation />
     <Header />
     <Main />
@@ -23,6 +10,7 @@
 </template>
 
 <script>
+import ParticlesBackground from './components/ParticlesBackground.vue'
 import IntroAnimation from './components/IntroAnimation.vue'
 import Header from './components/Header.vue'
 import Main from './components/Main.vue'
@@ -31,6 +19,7 @@ import Footer from './components/Footer.vue'
 export default {
   name: 'App',
   components: {
+    ParticlesBackground,
     IntroAnimation,
     Header,
     Main,
@@ -40,53 +29,19 @@ export default {
     return {
       scrollProgress: 0,
       lastScrollY: 0,
-      shapes: []
+      scrollProgress: 0,
+      lastScrollY: 0
     }
   },
   mounted() {
     window.addEventListener('scroll', this.updateScrollProgress)
-    this.generateShapes()
-    this.startPhysicsLoop()
+    window.addEventListener('scroll', this.updateScrollProgress)
   },
   beforeUnmount() {
     window.removeEventListener('scroll', this.updateScrollProgress)
   },
   methods: {
-    generateShapes() {
-      const shapeTypes = ['triangle-up', 'triangle-down', 'square']
-      const colors = ['#7db87d', '#a8e6a3', '#6ba86b']
-      
-      // 左側の配置ポイント
-      const leftPositions = [
-        { x: 8, y: 15 }, { x: 12, y: 35 }, { x: 6, y: 55 },
-        { x: 15, y: 25 }, { x: 10, y: 75 }, { x: 18, y: 65 }
-      ]
-      
-      // 右側の配置ポイント
-      const rightPositions = [
-        { x: 85, y: 20 }, { x: 90, y: 40 }, { x: 82, y: 60 },
-        { x: 88, y: 10 }, { x: 92, y: 80 }, { x: 84, y: 30 }
-      ]
-      
-      const allPositions = [...leftPositions, ...rightPositions]
-      
-      for (let i = 0; i < 12; i++) {
-        const pos = allPositions[i]
-        this.shapes.push({
-          type: shapeTypes[Math.floor(Math.random() * shapeTypes.length)],
-          x: pos.x + (Math.random() - 0.5) * 4, // ±2%のランダム調整
-          baseY: pos.y + (Math.random() - 0.5) * 10, // ±5%のランダム調整
-          y: 0,
-          velocity: 0,
-          rotation: Math.random() * 360,
-          rotationVelocity: 0,
-          opacity: 0.3 + Math.random() * 0.3,
-          color: colors[Math.floor(Math.random() * colors.length)],
-          sensitivity: 0.06 + Math.random() * 0.08,
-          rotationSensitivity: 0.02 + Math.random() * 0.05
-        })
-      }
-    },
+
     updateScrollProgress() {
       const scrollTop = window.pageYOffset
       const docHeight = document.documentElement.scrollHeight - window.innerHeight
@@ -95,25 +50,9 @@ export default {
       const scrollDelta = scrollTop - this.lastScrollY
       this.lastScrollY = scrollTop
       
-      this.shapes.forEach(shape => {
-        const direction = Math.random() > 0.5 ? 1 : -1
-        shape.velocity += scrollDelta * shape.sensitivity * direction
-        shape.rotationVelocity += scrollDelta * shape.rotationSensitivity * direction
-      })
+      this.lastScrollY = scrollTop
     },
-    startPhysicsLoop() {
-      const animate = () => {
-        this.shapes.forEach(shape => {
-          shape.y += shape.velocity
-          shape.rotation += shape.rotationVelocity
-          shape.velocity *= 0.95
-          shape.rotationVelocity *= 0.98
-          shape.y *= 0.99
-        })
-        requestAnimationFrame(animate)
-      }
-      animate()
-    }
+
   }
 }
 </script>
@@ -136,41 +75,7 @@ export default {
   box-shadow: 0 2px 4px rgba(125, 184, 125, 0.3);
 }
 
-.geometric-shapes {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-  z-index: -2;
-}
 
-.shape {
-  position: absolute;
-}
-
-.triangle-up {
-  width: 0;
-  height: 0;
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-bottom: 43px solid currentColor;
-}
-
-.triangle-down {
-  width: 0;
-  height: 0;
-  border-left: 25px solid transparent;
-  border-right: 25px solid transparent;
-  border-top: 43px solid currentColor;
-}
-
-.square {
-  width: 30px;
-  height: 30px;
-  background: currentColor;
-}
 
 body {
   font-family: 'DotGothic16', monospace;
