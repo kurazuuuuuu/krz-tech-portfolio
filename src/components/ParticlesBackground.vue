@@ -30,16 +30,16 @@ export default {
             },
             onHover: {
               enable: true,
-              mode: "grab"
+              mode: ["grab", "bubble"]
             },
             resize: true
           },
           modes: {
             bubble: {
-              distance: 400,
+              distance: 200,
               duration: 2,
-              opacity: 0.8,
-              size: 40
+              opacity: 1,
+              size: 12
             },
             push: {
               quantity: 4
@@ -85,7 +85,7 @@ export default {
             random: true,
             anim: {
               enable: true,
-              speed: 0.5,
+              speed: 2,
               opacity_min: 0.1,
               sync: false
             }
@@ -119,7 +119,7 @@ export default {
             direction: "random",
             animation: {
               enable: true,
-              speed: 5,
+              speed: 10,
               sync: false
             }
           }
