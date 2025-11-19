@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@tabler/icons": "^3.35.0",
+    "@tsparticles/slim": "^3.9.1",
+    "@tsparticles/vue3": "^3.0.1",
     "lottie-web": "^5.13.0",
     "vue": "^3.3.4",
     "vue-tabler-icons": "^2.21.0"
