@@ -30,7 +30,7 @@ export default {
             },
             onHover: {
               enable: true,
-              mode: "repulse"
+              mode: "grab"
             },
             resize: true
           },
@@ -44,9 +44,11 @@ export default {
             push: {
               quantity: 4
             },
-            repulse: {
-              distance: 100,
-              duration: 0.4
+            grab: {
+              distance: 140,
+              links: {
+                opacity: 1
+              }
             }
           }
         },
@@ -55,11 +57,11 @@ export default {
             value: ["#7db87d", "#a8e6a3", "#6ba86b"]
           },
           links: {
-            color: "#ffffff",
+            color: "#7db87d",
             distance: 150,
-            enable: false,
-            opacity: 0.5,
-            width: 1
+            enable: true,
+            opacity: 0.8,
+            width: 2
           },
           move: {
             direction: "none",
@@ -76,14 +78,14 @@ export default {
               enable: true,
               area: 800
             },
-            value: 15
+            value: 33
           },
           opacity: {
             value: 0.5,
             random: true,
             anim: {
               enable: true,
-              speed: 1,
+              speed: 0.5,
               opacity_min: 0.1,
               sync: false
             }
@@ -102,12 +104,12 @@ export default {
             }
           },
           size: {
-            value: { min: 10, max: 30 },
+            value: { min: 3.6, max: 9.6 },
             random: true,
             anim: {
               enable: true,
               speed: 2,
-              size_min: 5,
+              size_min: 0.1,
               sync: false
             }
           },
