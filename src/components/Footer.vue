@@ -2,7 +2,7 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-content">
-        <p>&copy; 2025 kurazu. Built with Amazon Q Developer</p>
+        <p>&copy; 2025 kurazu. Build with Vue.js</p>
       </div>
     </div>
   </footer>
