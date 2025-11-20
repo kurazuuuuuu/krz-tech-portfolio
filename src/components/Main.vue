@@ -9,10 +9,11 @@
         <h1 class="hero-title">{{ profile.name }}</h1>
         <p class="hero-subtitle">{{ profile.description }}</p>
         <div class="hero-skills">
-          <span v-for="(skill, index) in profile.skills" :key="skill" 
+          <span v-for="(skill, index) in profile.skills" :key="skill.name" 
                 class="skill-tag" 
                 :style="{ animationDelay: (1.5 + index * 0.1) + 's' }">
-            {{ skill }}
+            <component :is="skill.icon" size="18" />
+            {{ skill.name }}
           </span>
         </div>
         <div class="hero-actions">
@@ -57,8 +58,9 @@
               <h3>{{ project.name }}</h3>
               <p>{{ project.description }}</p>
               <div class="project-tech">
-                <span v-for="tech in project.technologies" :key="tech" class="tech-tag">
-                  {{ tech }}
+                <span v-for="tech in project.technologies" :key="tech.name" class="tech-tag">
+                  <component :is="tech.icon" size="16" />
+                  {{ tech.name }}
                 </span>
               </div>
               <div class="project-links">
@@ -98,6 +100,9 @@
 
 <script>
 import { HomeIcon, BrandTwitterIcon, BrandGithubIcon, BrandDiscordIcon, BookIcon, MailIcon } from 'vue-tabler-icons'
+import { convertWithTechIcons } from '../utils/techIcons'
+import 'primeicons/primeicons.css'
+
 
 export default {
   name: 'Main',
@@ -114,14 +119,14 @@ export default {
       profile: {
         name: 'くらず / kurazu',
         description: 'Backend & Infrastructure Enginner',
-        skills: ['VR / XR', 'Python', 'JavaScript', 'Linux', "Network"]
+        skills: ['VR / XR', 'Python', 'JavaScript', 'Linux', "Network"].map(convertWithTechIcons)
       },
       introduction: 'こんにちは、くらずと申します。福岡の情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスは全てその自宅鯖にデプロイしています。\nイベントに現れた時はよろしくお願いします！',
       projects: [
         {
           id: 'github-fairy',
           name: 'Fairy',
-          technologies: ['Discord.py', 'Vue.js', 'Gemini 2.5 Flash Lite', 'MongoDB'],
+          technologies: ['Discord.py', 'Vue.js', 'Gemini 2.5 Flash Lite', 'MongoDB'].map(convertWithTechIcons),
           deploy_url: 'https://fairy.krz-tech.net',
           github_url: 'https://github.com/kurazuuuuuu/fairy'
         }
@@ -303,6 +308,9 @@ export default {
   border: 2px solid #7db87d;
   font-size: 0.9rem;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   transition: all 0.3s ease;
   box-shadow: 2px 2px 0 #6ba86b;
   animation: fadeInUp 0.6s ease forwards;
@@ -510,6 +518,9 @@ export default {
   border: 1px solid #7db87d;
   font-size: 0.8rem;
   font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
 .project-links {
