@@ -1,7 +1,7 @@
 <template>
   <div id="app">
     <div class="progress-bar" :style="{ width: scrollProgress + '%' }"></div>
-    <ParticlesBackground />
+    <ThreeBackground />
     <IntroAnimation />
     <Header />
     <Main />
@@ -10,7 +10,7 @@
 </template>
 
 <script>
-import ParticlesBackground from './components/ParticlesBackground.vue'
+import ThreeBackground from './components/ThreeBackground.vue'
 import IntroAnimation from './components/IntroAnimation.vue'
 import Header from './components/Header.vue'
 import Main from './components/Main.vue'
@@ -19,7 +19,7 @@ import Footer from './components/Footer.vue'
 export default {
   name: 'App',
   components: {
-    ParticlesBackground,
+    ThreeBackground,
     IntroAnimation,
     Header,
     Main,

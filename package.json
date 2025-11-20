@@ -11,6 +11,7 @@
     "@tsparticles/slim": "^3.9.1",
     "@tsparticles/vue3": "^3.0.1",
     "lottie-web": "^5.13.0",
+    "three": "^0.181.2",
     "vanilla-tilt": "^1.8.1",
     "vue": "^3.3.4",
     "vue-tabler-icons": "^2.21.0"
