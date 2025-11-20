@@ -119,7 +119,7 @@ export default {
         description: 'Backend & Infrastructure Enginner',
         skills: ['VR / XR', 'Python', 'JavaScript', 'Linux', "Network"].map(convertWithTechIcons)
       },
-      introduction: 'こんにちは、くらずと申します。福岡の情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスは全てその自宅鯖にデプロイしています。\nイベントに現れた時はよろしくお願いします！',
+      introduction: 'こんにちは、くらずと申します。福岡の29卒情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスはほとんどをその自宅鯖にデプロイしています。\nハッカソンやイベントに現れる時があると思うので、よろしくお願いします！',
       projects: [
         {
           id: 'github-fairy',
