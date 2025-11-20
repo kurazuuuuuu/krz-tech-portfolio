@@ -101,8 +101,6 @@
 <script>
 import { HomeIcon, BrandTwitterIcon, BrandGithubIcon, BrandDiscordIcon, BookIcon, MailIcon } from 'vue-tabler-icons'
 import { convertWithTechIcons } from '../utils/techIcons'
-import 'primeicons/primeicons.css'
-
 
 export default {
   name: 'Main',

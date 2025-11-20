@@ -1,3 +1,4 @@
+import { markRaw } from 'vue';
 import {
     BrandVueIcon,
     BrandDiscordIcon,
@@ -8,7 +9,8 @@ import {
     BrandReactIcon,
     BrandGithubIcon,
     DatabaseIcon,
-    CodeIcon
+    CodeIcon,
+    BrandGoogleIcon
 } from 'vue-tabler-icons';
 
 export const convertWithTechIcons = (techName) => {
@@ -34,12 +36,14 @@ export const convertWithTechIcons = (techName) => {
         icon = BrandGithubIcon;
     } else if (lowerName.includes('mongo') || lowerName.includes('db') || lowerName.includes('sql')) {
         icon = DatabaseIcon;
+    } else if (lowerName.includes('gemini')) {
+        icon = BrandGoogleIcon;
     } else {
         icon = CodeIcon; // Default icon
     }
 
     return {
         name: techName,
-        icon: icon
+        icon: icon ? markRaw(icon) : null
     };
 };
