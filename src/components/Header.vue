@@ -2,7 +2,7 @@
   <header :class="{ 'scrolled': isScrolled }">
     <nav class="navbar">
       <div class="nav-brand">
-        <h2>kurazu</h2>
+        <h2>krz-tech.net</h2>
       </div>
       <div class="nav-links">
         <a 
