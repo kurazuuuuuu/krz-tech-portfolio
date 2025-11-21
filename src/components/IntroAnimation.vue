@@ -1,59 +1,46 @@
 <template>
-  <div v-if="showAnimation" class="intro-overlay">
-    <div ref="animationContainer" class="animation-container"></div>
-  </div>
+  <Transition name="fade">
+    <div v-if="showAnimation" class="intro-overlay">
+      <div ref="animationContainer" class="animation-container"></div>
+    </div>
+  </Transition>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onBeforeUnmount } from 'vue'
 import lottie from 'lottie-web'
 
-export default {
-  name: 'IntroAnimation',
-  data() {
-    return {
-      showAnimation: true,
-      animation: null
-    }
-  },
-  mounted() {
-    this.loadAnimation()
-    // 1.3秒後にフェードアウト開始
-    setTimeout(() => {
-      this.$el.style.opacity = '1'
-      this.$el.style.transition = 'opacity 0.2s ease-out'
-      this.$el.style.opacity = '0'
-    }, 1300)
-    // 1.5秒後に完全に非表示
-    setTimeout(() => {
-      this.showAnimation = false
-    }, 1500)
-  },
-  methods: {
-    loadAnimation() {
-      this.animation = lottie.loadAnimation({
-        container: this.$refs.animationContainer,
-        renderer: 'svg',
-        loop: false,
-        autoplay: true,
-        path: '/simple_intro_animation.json?v=' + Date.now(),
-        rendererSettings: {
-          preserveAspectRatio: 'xMidYMid slice',
-          viewBoxOnly: true
-        }
-      })
-      
-      // レスポンシブ対応
-      this.animation.resize()
-      
+const showAnimation = ref(true)
+const animationContainer = ref(null)
+let animation = null
 
+onMounted(() => {
+  animation = lottie.loadAnimation({
+    container: animationContainer.value,
+    renderer: 'svg',
+    loop: false,
+    autoplay: true,
+    path: '/simple_intro_animation.json?v=' + Date.now(),
+    rendererSettings: {
+      preserveAspectRatio: 'xMidYMid slice',
+      viewBoxOnly: true
     }
-  },
-  beforeUnmount() {
-    if (this.animation) {
-      this.animation.destroy()
-    }
+  })
+
+  // レスポンシブ対応
+  animation.resize()
+
+  // 1.3秒後にフェードアウト開始
+  setTimeout(() => {
+    showAnimation.value = false
+  }, 1300)
+})
+
+onBeforeUnmount(() => {
+  if (animation) {
+    animation.destroy()
   }
-}
+})
 </script>
 
 <style scoped>
@@ -76,20 +63,20 @@ export default {
   align-items: center;
 }
 
-.animation-container svg {
+:deep(.animation-container svg) {
   width: 100% !important;
   height: 100% !important;
   object-fit: contain;
 }
 
-@keyframes fadeOut {
-  from {
-    opacity: 1;
-  }
-  to {
-    opacity: 0;
-  }
+/* Vue Transition styles */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease-out;
 }
 
-
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

@@ -44,7 +44,9 @@
     <!-- Projects Section -->
     <section id="projects" class="projects">
       <div class="container">
-        <h2 class="section-title animate-on-scroll">Projects</h2>
+        <h2 class="section-title animate-on-scroll">
+          <DancingText text="Projects" />
+        </h2>
         <div v-if="projects.length === 0" class="no-projects animate-on-scroll">
           <h3>Coming Soon(´・ω・｀)</h3>
           <p>返事がない...</p>
@@ -76,7 +78,9 @@
     <!-- Contact Section -->
     <section id="contact" class="contact">
       <div class="container">
-        <h2 class="section-title animate-on-scroll">Let's Connect</h2>
+        <h2 class="section-title animate-on-scroll">
+          <DancingText text="Let's Connect" />
+        </h2>
         <div class="contact-content animate-on-scroll">
           <p class="contact-text">どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！</p>
           <a href="mailto:contact@krz-tech.net" class="contact-email">
@@ -101,6 +105,7 @@
 <script>
 import { HomeIcon, BrandTwitterIcon, BrandGithubIcon, BrandDiscordIcon, BookIcon, MailIcon } from 'vue-tabler-icons'
 import { convertWithTechIcons } from '../utils/techIcons'
+import DancingText from './DancingText.vue'
 
 export default {
   name: 'Main',
@@ -110,7 +115,8 @@ export default {
     BrandGithubIcon,
     BrandDiscordIcon,
     BookIcon,
-    MailIcon
+    MailIcon,
+    DancingText
   },
   data() {
     return {

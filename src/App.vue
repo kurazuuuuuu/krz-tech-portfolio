@@ -10,11 +10,15 @@
 </template>
 
 <script>
-import ThreeBackground from './components/ThreeBackground.vue'
+import { defineAsyncComponent } from 'vue'
 import IntroAnimation from './components/IntroAnimation.vue'
 import Header from './components/Header.vue'
 import Main from './components/Main.vue'
 import Footer from './components/Footer.vue'
+
+const ThreeBackground = defineAsyncComponent(() =>
+  import('./components/ThreeBackground.vue')
+)
 
 export default {
   name: 'App',
