@@ -1,13 +1,18 @@
 <template>
-  <header>
+  <header :class="{ 'scrolled': isScrolled }">
     <nav class="navbar">
       <div class="nav-brand">
         <h2>kurazu</h2>
       </div>
       <div class="nav-links">
-        <a @click="scrollTo('about')" class="nav-link">About</a>
-        <a @click="scrollTo('projects')" class="nav-link">Projects</a>
-        <a @click="scrollTo('contact')" class="nav-link">Contact</a>
+        <a 
+          v-for="item in navItems" 
+          :key="item.id"
+          @click="scrollTo(item.id)" 
+          class="nav-link"
+        >
+          {{ item.label }}
+        </a>
         <a href="https://foto.krz-tech.net/" class="nav-link icon-link" target="_blank">
           <PhotoIcon :size="20"></PhotoIcon>
         </a>
@@ -19,26 +24,39 @@
   </header>
 </template>
 
-<script>
+<script setup>
+import { ref, onMounted, onUnmounted } from 'vue'
 import { BrandGithubIcon, PhotoIcon } from 'vue-tabler-icons'
 
-export default {
-  name: 'Header',
-  components: {
-    BrandGithubIcon, PhotoIcon
-  },
-  methods: {
-    scrollTo(elementId) {
-      const element = document.getElementById(elementId)
-      if (element) {
-        element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
-      }
-    }
+const isScrolled = ref(false)
+
+const navItems = [
+  { id: 'about', label: 'About' },
+  { id: 'projects', label: 'Projects' },
+  { id: 'contact', label: 'Contact' }
+]
+
+const handleScroll = () => {
+  isScrolled.value = window.scrollY > 50
+}
+
+const scrollTo = (elementId) => {
+  const element = document.getElementById(elementId)
+  if (element) {
+    element.scrollIntoView({
+      behavior: 'smooth',
+      block: 'start'
+    })
   }
 }
+
+onMounted(() => {
+  window.addEventListener('scroll', handleScroll)
+})
+
+onUnmounted(() => {
+  window.removeEventListener('scroll', handleScroll)
+})
 </script>
 
 <style scoped>
@@ -51,6 +69,15 @@ header {
   background: rgba(168, 230, 163, 0.9);
   border-bottom: 3px solid #7db87d;
   box-shadow: 0 2px 0 #6ba86b;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+header.scrolled {
+  background: rgba(168, 230, 163, 0.7);
+  backdrop-filter: blur(10px);
+  padding: 0;
+  border-bottom: 1px solid rgba(125, 184, 125, 0.5);
 }
 
 .navbar {
@@ -60,6 +87,11 @@ header {
   padding: 1rem 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  transition: padding 0.3s ease;
+}
+
+header.scrolled .navbar {
+  padding: 0.5rem 2rem;
 }
 
 .nav-brand h2 {
@@ -67,6 +99,7 @@ header {
   font-weight: 600;
   font-size: 1.5rem;
   text-shadow: 1px 1px 0 #a8e6a3;
+  cursor: pointer;
 }
 
 .nav-links {
@@ -103,6 +136,10 @@ header {
     padding: 1rem;
   }
   
+  header.scrolled .navbar {
+    padding: 0.5rem 1rem;
+  }
+
   .nav-links {
     gap: 1rem;
   }
