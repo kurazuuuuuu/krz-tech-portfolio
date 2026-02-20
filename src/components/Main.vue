@@ -258,6 +258,12 @@ export default {
 
 .hero-content {
   max-width: 800px;
+  /* background: rgba(10, 20, 15, 0.5); */
+  /* backdrop-filter: blur(12px); */
+  /* -webkit-backdrop-filter: blur(12px); */
+  border-radius: 16px;
+  padding: 3rem 2.5rem;
+  /* border: 1px solid rgba(125, 184, 125, 0.15); */
 }
 
 .hero-avatar {
@@ -439,9 +445,11 @@ export default {
 /* Projects Section */
 .projects {
   padding: 5rem 0;
-  background: rgba(168, 230, 163, 0.3);
-  border-top: 3px solid #7db87d;
-  border-bottom: 3px solid #7db87d;
+  background: rgba(10, 20, 15, 0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-top: 1px solid rgba(125, 184, 125, 0.3);
+  border-bottom: 1px solid rgba(125, 184, 125, 0.3);
 }
 
 .section-title {
@@ -460,15 +468,17 @@ export default {
 }
 
 .project-card {
-  background: #d4f1d4;
+  background: rgba(30, 60, 30, 0.85);
   padding: 2rem;
-  border: 3px solid #7db87d;
+  border: 2px solid rgba(125, 184, 125, 0.4);
+  border-radius: 8px;
   transition: all 0.1s ease;
 }
 
 .project-card:hover {
-  box-shadow: 10px 10px 20px rgba(0, 0, 0, 0.2);
-  background: #c0edc0;
+  box-shadow: 0 8px 32px rgba(125, 184, 125, 0.2);
+  background: rgba(40, 75, 40, 0.9);
+  border-color: rgba(125, 184, 125, 0.6);
 }
 
 .project-image {
@@ -495,15 +505,14 @@ export default {
 }
 
 .project-content h3 {
-  color: #2d5a2d;
+  color: #a8e6a3;
   font-size: 1.75rem;
   margin-bottom: 1rem;
   font-weight: 600;
-  text-shadow: 1px 1px 0 #a8e6a3;
 }
 
 .project-content p {
-  color: #4a7a4a;
+  color: rgba(168, 230, 163, 0.8);
   margin-bottom: 1.5rem;
   line-height: 1.6;
 }
@@ -516,15 +525,16 @@ export default {
 }
 
 .tech-tag {
-  background: #a8e6a3;
-  color: #2d5a2d;
+  background: rgba(125, 184, 125, 0.2);
+  color: #a8e6a3;
   padding: 0.3rem 0.5rem;
-  border: 1px solid #7db87d;
+  border: 1px solid rgba(125, 184, 125, 0.3);
   font-size: 0.8rem;
   font-weight: 500;
   display: flex;
   align-items: center;
   gap: 0.3rem;
+  border-radius: 4px;
 }
 
 .project-links {
@@ -550,41 +560,44 @@ export default {
 .no-projects {
   text-align: center;
   padding: 4rem 2rem;
-  background: #d4f1d4;
-  border: 3px solid #7db87d;
-  box-shadow: 4px 4px 0 #a8e6a3;
+  background: rgba(30, 60, 30, 0.85);
+  border: 2px solid rgba(125, 184, 125, 0.4);
+  border-radius: 8px;
   max-width: 500px;
   margin: 0 auto;
 }
 
 .no-projects h3 {
-  color: #2d5a2d;
+  color: #a8e6a3;
   font-size: 1.8rem;
   margin-bottom: 1rem;
   font-weight: 600;
-  text-shadow: 1px 1px 0 #a8e6a3;
 }
 
 .no-projects p {
-  color: #4a7a4a;
+  color: rgba(168, 230, 163, 0.8);
   font-size: 1.1rem;
   line-height: 1.6;
 }
+
+
 
 /* Contact Section */
 .contact {
   padding: 5rem 0;
   text-align: center;
+  background: rgba(10, 20, 15, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .contact-text {
   font-size: 1.2rem;
-  color: #4a7a4a;
+  color: rgba(168, 230, 163, 0.85);
   margin-bottom: 2rem;
   max-width: 600px;
   margin-left: auto;
   margin-right: auto;
-  text-shadow: 1px 1px 0 #a8e6a3;
 }
 
 .contact-email {
@@ -593,20 +606,19 @@ export default {
   gap: 0.5rem;
   font-size: 1.3rem;
   font-weight: 600;
-  color: #2d5a2d;
+  color: #a8e6a3;
   text-decoration: none;
   padding: 1rem 2rem;
   margin-bottom: 2rem;
-  background: #d4f1d4;
-  border: 3px solid #7db87d;
-  box-shadow: 3px 3px 0 #a8e6a3;
+  background: rgba(30, 60, 30, 0.8);
+  border: 2px solid rgba(125, 184, 125, 0.4);
+  border-radius: 8px;
   transition: all 0.3s ease;
 }
 
 .contact-email:hover {
-  background: #a8e6a3;
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 #7db87d;
+  background: rgba(50, 90, 50, 0.9);
+  border-color: #7db87d;
 }
 
 .social-links {
@@ -620,21 +632,20 @@ export default {
   display: flex;
   align-items: center;
   gap: 0.5rem;
-  color: #2d5a2d;
+  color: #a8e6a3;
   text-decoration: none;
   font-weight: 500;
   padding: 1rem 2rem;
-  background: #a8e6a3;
-  border: 3px solid #7db87d;
+  background: rgba(30, 60, 30, 0.8);
+  border: 2px solid rgba(125, 184, 125, 0.4);
+  border-radius: 8px;
   transition: all 0.3s ease;
-  box-shadow: 3px 3px 0 #6ba86b;
 }
 
 .social-link:hover {
-  background: #7db87d;
-  color: white;
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 #6ba86b;
+  background: rgba(50, 90, 50, 0.9);
+  color: #c0f0c0;
+  border-color: #7db87d;
 }
 
 /* Responsive Design */
