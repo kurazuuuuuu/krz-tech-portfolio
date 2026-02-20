@@ -4,7 +4,8 @@
 - **Framework**: Vue.js 3 / Vite
 - **3D / Graphics**:
   - Three.js
-  - tsParticles
+    - SPARK (3DGSレンダー)
+  <!-- - tsParticles -->
 - **Animation**:
   - Lottie (アニメーション表示)
   - Vanilla-tilt.js
