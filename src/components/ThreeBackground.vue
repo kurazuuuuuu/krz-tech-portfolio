@@ -81,7 +81,7 @@ const buildGeometry = (imageData, imgW, imgH) => {
 
       // Combine: center + bright = closer
       const pz = -55
-        + lum            * 45   // bright → near
+        + lum            * 10   // bright → near
         - distFromCenter * 35   // edges  → far
         + (Math.random() - 0.5) * 8   // depth jitter for volume feel
 

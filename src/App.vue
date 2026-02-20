@@ -6,10 +6,11 @@
     <GaussianSplatBackground
       splat-path="/background.splat"
       quality="high"
+      :point-size="0.02"
       :camera-position="[0, 0.3, -0.5]"
-      :camera-look-at="[0, 0.05, -1]"
-      :parallax-range="0.05"
+      :camera-look-at="[0, 0.09, -1]"
       :scene-rotation="[1, 0, 0, 0.3]" 
+      :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
     />
 
