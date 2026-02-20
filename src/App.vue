@@ -1,7 +1,21 @@
 <template>
   <div id="app">
     <div class="progress-bar" :style="{ width: scrollProgress + '%' }"></div>
-    <ThreeBackground />
+
+    <!-- 3DGS スプラット背景 (public/background.splat を配置) -->
+    <GaussianSplatBackground
+      splat-path="/background.splat"
+      quality="high"
+      :camera-position="[0, 0.3, -0.5]"
+      :camera-look-at="[0, 0.05, -1]"
+      :parallax-range="0.05"
+      :scene-rotation="[1, 0, 0, 0.3]" 
+      :sh-degree="0"
+    />
+
+    <!-- 画像ポイントクラウド版 (フォールバック用) -->
+    <!-- <ThreeBackground /> -->
+
     <IntroAnimation />
     <Header />
     <Main />
@@ -16,14 +30,20 @@ import Header from './components/Header.vue'
 import Main from './components/Main.vue'
 import Footer from './components/Footer.vue'
 
-const ThreeBackground = defineAsyncComponent(() =>
-  import('./components/ThreeBackground.vue')
+const GaussianSplatBackground = defineAsyncComponent(() =>
+  import('./components/GaussianSplatBackground.vue')
 )
+
+// 画像ポイントクラウド版 (フォールバック用)
+// const ThreeBackground = defineAsyncComponent(() =>
+//   import('./components/ThreeBackground.vue')
+// )
 
 export default {
   name: 'App',
   components: {
-    ThreeBackground,
+    GaussianSplatBackground,
+    // ThreeBackground,
     IntroAnimation,
     Header,
     Main,
@@ -83,11 +103,7 @@ export default {
 
 body {
   font-family: 'DotGothic16', monospace;
-  background-image: url('/img/vrc_background.webp');
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center center;
-  background-attachment: fixed;
+  background-color: #111820;
   min-height: 100vh;
   color: #2d5a2d;
   line-height: 1.4;
@@ -97,22 +113,6 @@ body {
   position: relative;
 }
 
-body::before {
-  content: '';
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: 
-    radial-gradient(circle at 25% 25%, rgba(168, 230, 163, 0.3) 2px, transparent 2px),
-    radial-gradient(circle at 75% 75%, rgba(168, 230, 163, 0.3) 2px, transparent 2px),
-    rgba(232, 245, 232, 0.7);
-  background-size: 20px 20px, 20px 20px, 100% 100%;
-  background-position: 0 0, 10px 10px, 0 0;
-  pointer-events: none;
-  z-index: -1;
-}
 
 #app {
   min-height: 100vh;
