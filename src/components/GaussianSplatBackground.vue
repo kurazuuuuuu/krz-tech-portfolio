@@ -10,7 +10,7 @@
         </span>
       </div>
     </Transition>
-    
+
     <!-- Camera Position/Direction Overlay -->
     <div v-if="status === 'ready' && overlayEnabled" class="camera-info-overlay">
       <div class="info-row">
@@ -27,14 +27,14 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
+import { ref, onMounted, onBeforeUnmount } from "vue";
 
 // ---- Props --------------------------------------------------------
 const props = defineProps({
   // Path to your .ply / .spz / .splat / .ksplat file under /public
   splatPath: {
     type: String,
-    default: '/scene.ply',
+    default: "/scene.ply",
   },
   // Initial camera position in the 3DGS scene's coordinate space
   cameraPosition: {
@@ -84,200 +84,207 @@ const props = defineProps({
   // Quality preset: 'high', 'medium', 'low'
   quality: {
     type: String,
-    default: 'medium',
-  }
-})
+    default: "medium",
+  },
+});
 
 // ---- State --------------------------------------------------------
-const container  = ref(null)
-const status     = ref('loading')   // 'loading' | 'ready' | 'error'
-const progress   = ref(0)
-const overlayEnabled = ref(false) // Turned off for production
+const container = ref(null);
+const status = ref("loading"); // 'loading' | 'ready' | 'error'
+const progress = ref(0);
+const overlayEnabled = ref(false); // Turned off for production
 
 // Mouse parallax state
-const mouse = { x: 0, y: 0 }
+const mouse = { x: 0, y: 0 };
 // Smooth mouse for shader interactions
-const smoothMouse = { x: 0, y: 0 }
-let basePos = null
-let lookTarget = null
+const smoothMouse = { x: 0, y: 0 };
+let basePos = null;
+let lookTarget = null;
 
 // Camera info for overlay
-const camPos = ref({ x: '0.00', y: '0.00', z: '0.00' })
-const camDir = ref({ x: '0.00', y: '0.00', z: '0.00' })
+const camPos = ref({ x: "0.00", y: "0.00", z: "0.00" });
+const camDir = ref({ x: "0.00", y: "0.00", z: "0.00" });
 
 // ---- Internals ----------------------------------------------------
-let renderer      = null
-let camera        = null
-let scene         = null
-let splatMesh     = null
-let animationId   = null
-let THREE         = null
-let SPARK         = null
-let glassShards   = []
-let renderTarget  = null // Offscreen buffer for screen-space refraction
-let glassUniforms = null // Shared uniforms for glass shader
+let renderer = null;
+let camera = null;
+let scene = null;
+let splatMesh = null;
+let animationId = null;
+let THREE = null;
+let SPARK = null;
+let glassShards = [];
+let renderTarget = null; // Offscreen buffer for screen-space refraction
+let glassUniforms = null; // Shared uniforms for glass shader
 
 // ---- Event Listeners ----------------------------------------------
 const onResize = () => {
-  if (!renderer || !camera) return
-  const w = window.innerWidth
-  const h = window.innerHeight
-  camera.aspect = w / h
-  camera.updateProjectionMatrix()
-  renderer.setSize(w, h)
+  if (!renderer || !camera) return;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  camera.aspect = w / h;
+  camera.updateProjectionMatrix();
+  renderer.setSize(w, h);
   // Resize offscreen render target too
-  if (renderTarget) renderTarget.setSize(w, h)
-  if (glassUniforms) glassUniforms.resolution.value.set(w, h)
-}
+  if (renderTarget) renderTarget.setSize(w, h);
+  if (glassUniforms) glassUniforms.resolution.value.set(w, h);
+};
 
 const onMouseMove = (e) => {
   // Normalize mouse coordinates to -1 ... 1
-  mouse.x = (e.clientX / window.innerWidth) * 2 - 1
-  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1
-}
+  mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
+  mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+};
 
 // ---- Init ---------------------------------------------------------
 const init = async () => {
-  THREE = await import('three')
-  SPARK = await import('@sparkjsdev/spark')
+  THREE = await import("three");
+  SPARK = await import("@sparkjsdev/spark");
 
-  basePos = new THREE.Vector3().fromArray(props.cameraPosition)
-  lookTarget = new THREE.Vector3().fromArray(props.cameraLookAt)
+  basePos = new THREE.Vector3().fromArray(props.cameraPosition);
+  lookTarget = new THREE.Vector3().fromArray(props.cameraLookAt);
 
-  const w = window.innerWidth
-  const h = window.innerHeight
+  const w = window.innerWidth;
+  const h = window.innerHeight;
 
   // Determine pixel ratio limit based on quality prop
-  const maxPixelRatio = props.quality === 'high' ? 2 : (props.quality === 'low' ? 1 : 1.5)
+  const maxPixelRatio = props.quality === "high" ? 2 : props.quality === "low" ? 1 : 1.5;
 
   // Standard THREE.js Setup
-  renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true })
-  renderer.setClearColor(0x000000, 0)
-  renderer.setSize(w, h)
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio))
+  renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+  renderer.setClearColor(0x000000, 0);
+  renderer.setSize(w, h);
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
   // Enable tone mapping for PBR glass material
-  renderer.toneMapping = THREE.ACESFilmicToneMapping
-  renderer.toneMappingExposure = 1.0
-  container.value.appendChild(renderer.domElement)
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.0;
+  container.value.appendChild(renderer.domElement);
 
-  camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 500) // Changed FOV from 60 to 50 for a 1.2x zoom
-  camera.position.fromArray(props.cameraPosition)
-  camera.lookAt(new THREE.Vector3().fromArray(props.cameraLookAt))
+  camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 500); // Changed FOV from 60 to 50 for a 1.2x zoom
+  camera.position.fromArray(props.cameraPosition);
+  camera.lookAt(new THREE.Vector3().fromArray(props.cameraLookAt));
 
-  scene = new THREE.Scene()
+  scene = new THREE.Scene();
 
   // Offscreen render target for screen-space refraction
   renderTarget = new THREE.WebGLRenderTarget(w, h, {
     format: THREE.RGBAFormat,
     type: THREE.UnsignedByteType,
-  })
+  });
 
   // Add subtle ambient + directional lighting for glass highlights
-  const ambientLight = new THREE.AmbientLight(0x7db87d, 0.3)
-  scene.add(ambientLight)
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.5)
-  dirLight.position.set(2, 3, 1)
-  scene.add(dirLight)
+  const ambientLight = new THREE.AmbientLight(0x7db87d, 0.3);
+  scene.add(ambientLight);
+  const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+  dirLight.position.set(2, 3, 1);
+  scene.add(dirLight);
 
   // Generate glowing circle texture for holographic points
   const createCircleTexture = () => {
-    const size = 64
-    const canvas = document.createElement('canvas')
-    canvas.width = size
-    canvas.height = size
-    const context = canvas.getContext('2d')
-    const center = size / 2
-    
-    const gradient = context.createRadialGradient(center, center, 0, center, center, center)
-    gradient.addColorStop(0, 'rgba(255, 255, 255, 1)')
-    gradient.addColorStop(0.4, 'rgba(255, 255, 255, 0.8)')
-    gradient.addColorStop(1, 'rgba(0, 0, 0, 0)')
-    
-    context.fillStyle = gradient
-    context.fillRect(0, 0, size, size)
-    
-    return new THREE.CanvasTexture(canvas)
-  }
+    const size = 64;
+    const canvas = document.createElement("canvas");
+    canvas.width = size;
+    canvas.height = size;
+    const context = canvas.getContext("2d");
+    const center = size / 2;
 
-  window.addEventListener('resize', onResize)
-  window.addEventListener('mousemove', onMouseMove)
+    const gradient = context.createRadialGradient(center, center, 0, center, center, center);
+    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+    gradient.addColorStop(0.4, "rgba(255, 255, 255, 0.8)");
+    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+    context.fillStyle = gradient;
+    context.fillRect(0, 0, size, size);
+
+    return new THREE.CanvasTexture(canvas);
+  };
+
+  window.addEventListener("resize", onResize);
+  window.addEventListener("mousemove", onMouseMove);
 
   // Create glass shards scattered in the scene
-  createGlassShards()
+  createGlassShards();
 
   // Start the render loop immediately
-  animate()
+  animate();
 
   // Load the 3DGS model using SPARK
   try {
-    const loader = new SPARK.SplatLoader()
-    
+    const loader = new SPARK.SplatLoader();
+
     await new Promise((resolve, reject) => {
       loader.load(
         props.splatPath,
         (packedSplats) => {
           // Splat loaded and parsed, now construct the point cloud
-          const count = packedSplats.numSplats
-          
+          const count = packedSplats.numSplats;
+
           // Pre-allocate buffers
-          const positions = new Float32Array(count * 3)
-          const colors = new Float32Array(count * 3)
-          
-          let validPoints = 0
-          const minAlpha = props.alphaThreshold / 255.0
-          
+          const positions = new Float32Array(count * 3);
+          const colors = new Float32Array(count * 3);
+
+          let validPoints = 0;
+          const minAlpha = props.alphaThreshold / 255.0;
+
           packedSplats.forEachSplat((index, center, scales, quaternion, opacity, color) => {
             // Drop points with extremely low opacity to save rendering vertex count
-            if (opacity < Math.max(minAlpha, 0.05)) return 
+            if (opacity < Math.max(minAlpha, 0.05)) return;
 
-            positions[validPoints * 3]     = center.x
-            positions[validPoints * 3 + 1] = center.y
-            positions[validPoints * 3 + 2] = center.z
-            
-            colors[validPoints * 3]     = color.r
-            colors[validPoints * 3 + 1] = color.g
-            colors[validPoints * 3 + 2] = color.b
-            
-            validPoints++
-          })
+            positions[validPoints * 3] = center.x;
+            positions[validPoints * 3 + 1] = center.y;
+            positions[validPoints * 3 + 2] = center.z;
 
-          const geometry = new THREE.BufferGeometry()
-          geometry.setAttribute('position', new THREE.BufferAttribute(positions.subarray(0, validPoints * 3), 3))
-          geometry.setAttribute('color', new THREE.BufferAttribute(colors.subarray(0, validPoints * 3), 3))
+            colors[validPoints * 3] = color.r;
+            colors[validPoints * 3 + 1] = color.g;
+            colors[validPoints * 3 + 2] = color.b;
 
-          const circleTexture = createCircleTexture()
+            validPoints++;
+          });
+
+          const geometry = new THREE.BufferGeometry();
+          geometry.setAttribute(
+            "position",
+            new THREE.BufferAttribute(positions.subarray(0, validPoints * 3), 3),
+          );
+          geometry.setAttribute(
+            "color",
+            new THREE.BufferAttribute(colors.subarray(0, validPoints * 3), 3),
+          );
+
+          const circleTexture = createCircleTexture();
 
           // Hologram PointCloud material (Additive Blending + Glowing Spheres)
           const material = new THREE.PointsMaterial({
             size: props.pointSize * 1.5, // Slightly larger size since edges are now soft
             vertexColors: true,
-            sizeAttenuation: true, 
+            sizeAttenuation: true,
             transparent: true,
             opacity: 0.8, // Additive blending handles intensity, so we can raise base opacity
-            depthWrite: false, 
+            depthWrite: false,
             blending: THREE.AdditiveBlending, // Makes overlapping points glow
             map: circleTexture, // Use the soft circle instead of harsh squares
             color: 0x7db87d, // Multiply the original colors with the cyber-green theme
-          })
+          });
 
           // Add custom shader for brightness-wobble, depth fog, iridescence, and mouse repulsion
-          const customUniforms = { 
+          const customUniforms = {
             time: { value: 0 },
             uMouse: { value: new THREE.Vector2(0, 0) },
             uCameraPos: { value: new THREE.Vector3() },
             uColorA: { value: new THREE.Color(0x7db87d) }, // Base cyber green
             uColorB: { value: new THREE.Color(0x42f5e3) }, // Cyan for iridescence
-          }
-          
+          };
+
           material.onBeforeCompile = (shader) => {
-            shader.uniforms.time = customUniforms.time
-            shader.uniforms.uMouse = customUniforms.uMouse
-            shader.uniforms.uCameraPos = customUniforms.uCameraPos
-            shader.uniforms.uColorA = customUniforms.uColorA
-            shader.uniforms.uColorB = customUniforms.uColorB
-            
+            shader.uniforms.time = customUniforms.time;
+            shader.uniforms.uMouse = customUniforms.uMouse;
+            shader.uniforms.uCameraPos = customUniforms.uCameraPos;
+            shader.uniforms.uColorA = customUniforms.uColorA;
+            shader.uniforms.uColorB = customUniforms.uColorB;
+
             // Pass varying to fragment shader for colors
-            shader.vertexShader = `
+            shader.vertexShader =
+              `
               uniform float time;
               uniform vec2 uMouse;
               uniform vec3 uCameraPos;
@@ -285,11 +292,11 @@ const init = async () => {
               uniform vec3 uColorB;
               varying vec3 vMixedColor;
               varying float vDepth;
-            \n` + shader.vertexShader
-            
+            \n` + shader.vertexShader;
+
             // Replace the position transform logic to inject wobble & mouse repulsion
             shader.vertexShader = shader.vertexShader.replace(
-              '#include <begin_vertex>',
+              "#include <begin_vertex>",
               `
               vec3 transformed = vec3(position);
               
@@ -328,24 +335,27 @@ const init = async () => {
               
               // 5. Calculate Depth for Fog
               vDepth = ndcPos.z / ndcPos.w;
-              `
-            )
+              `,
+            );
 
             // Fragment Shader setup
-            shader.fragmentShader = `
+            shader.fragmentShader =
+              `
               varying vec3 vMixedColor;
               varying float vDepth;
-            \n` + shader.fragmentShader
-            
+            \n` + shader.fragmentShader;
+
             // Replace outgoing color logic to use mixed color and apply Depth Fog
-            shader.fragmentShader = shader.fragmentShader.replace(
-              'vec4 diffuseColor = vec4( diffuse, opacity );',
-              `
+            shader.fragmentShader = shader.fragmentShader
+              .replace(
+                "vec4 diffuseColor = vec4( diffuse, opacity );",
+                `
               vec4 diffuseColor = vec4( vMixedColor, opacity );
-              `
-            ).replace(
-              '#include <dithering_fragment>',
-              `
+              `,
+              )
+              .replace(
+                "#include <dithering_fragment>",
+                `
               #include <dithering_fragment>
               
               // Depth Fog calculation (fade out points extremely far or extremely close)
@@ -353,54 +363,59 @@ const init = async () => {
               float fogFar = 2.0;
               float fogFactor = smoothstep(fogNear, fogFar, vDepth);
               gl_FragColor.a *= (1.0 - fogFactor); // Fade out distant points
-              `
-            )
-          }
+              `,
+              );
+          };
 
-          splatMesh = new THREE.Points(geometry, material)
-          splatMesh.userData.uniforms = customUniforms
+          splatMesh = new THREE.Points(geometry, material);
+          splatMesh.userData.uniforms = customUniforms;
 
           // Apply user transformations
-          splatMesh.quaternion.fromArray(props.sceneRotation)
-          splatMesh.position.fromArray(props.scenePosition)
-          splatMesh.scale.fromArray(props.sceneScale)
+          splatMesh.quaternion.fromArray(props.sceneRotation);
+          splatMesh.position.fromArray(props.scenePosition);
+          splatMesh.scale.fromArray(props.sceneScale);
 
-          scene.add(splatMesh)
-          console.log('[GaussianSplatBackground] PointCloud created with points:', validPoints, 'from original:', count)
-          resolve()
+          scene.add(splatMesh);
+          console.log(
+            "[GaussianSplatBackground] PointCloud created with points:",
+            validPoints,
+            "from original:",
+            count,
+          );
+          resolve();
         },
         (xhr) => {
           // Update progress bar
           if (xhr.total > 0) {
-            progress.value = (xhr.loaded / xhr.total) * 100
+            progress.value = (xhr.loaded / xhr.total) * 100;
           } else {
             // For chunks without total length header
-            progress.value = Math.min((xhr.loaded / 30000000) * 100, 99) 
+            progress.value = Math.min((xhr.loaded / 30000000) * 100, 99);
           }
         },
         (err) => {
-          reject(err)
-        }
-      )
-    })
-    
-    status.value = 'ready'
+          reject(err);
+        },
+      );
+    });
+
+    status.value = "ready";
   } catch (err) {
-    console.error('[GaussianSplatBackground] Failed to load splat via SPARK:', err)
-    status.value = 'error'
+    console.error("[GaussianSplatBackground] Failed to load splat via SPARK:", err);
+    status.value = "error";
   }
-}
+};
 
 // ---- Glass Shards (Screen-Space Refraction) ----------------------
 const createGlassShards = () => {
-  const shardCount = 50
+  const shardCount = 50;
 
   // Shared uniforms for all glass shards
   glassUniforms = {
     tBackground: { value: renderTarget.texture },
     resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     time: { value: 0 },
-  }
+  };
 
   const glassMaterial = new THREE.ShaderMaterial({
     uniforms: glassUniforms,
@@ -455,31 +470,37 @@ const createGlassShards = () => {
     transparent: true,
     side: THREE.DoubleSide,
     depthWrite: false,
-  })
+  });
 
   for (let i = 0; i < shardCount; i++) {
     // Create random triangular shard geometry
-    const geometry = new THREE.BufferGeometry()
-    const scale = 0.05 + Math.random() * 0.15
+    const geometry = new THREE.BufferGeometry();
+    const scale = 0.05 + Math.random() * 0.15;
     const vertices = new Float32Array([
-      (Math.random() - 0.5) * scale, (Math.random() - 0.3) * scale * 1.5, (Math.random() - 0.5) * scale * 0.3,
-      (Math.random() - 0.5) * scale, (Math.random() + 0.2) * scale * 1.5, (Math.random() - 0.5) * scale * 0.3,
-      (Math.random() + 0.3) * scale, (Math.random() - 0.5) * scale * 1.5, (Math.random() - 0.5) * scale * 0.3,
-    ])
-    geometry.setAttribute('position', new THREE.BufferAttribute(vertices, 3))
-    geometry.computeVertexNormals()
+      (Math.random() - 0.5) * scale,
+      (Math.random() - 0.3) * scale * 1.5,
+      (Math.random() - 0.5) * scale * 0.3,
+      (Math.random() - 0.5) * scale,
+      (Math.random() + 0.2) * scale * 1.5,
+      (Math.random() - 0.5) * scale * 0.3,
+      (Math.random() + 0.3) * scale,
+      (Math.random() - 0.5) * scale * 1.5,
+      (Math.random() - 0.5) * scale * 0.3,
+    ]);
+    geometry.setAttribute("position", new THREE.BufferAttribute(vertices, 3));
+    geometry.computeVertexNormals();
 
-    const shard = new THREE.Mesh(geometry, glassMaterial)
+    const shard = new THREE.Mesh(geometry, glassMaterial);
     shard.position.set(
       (Math.random() - 0.5) * 1.5,
       (Math.random() - 0.3) * 0.8,
-      -0.3 - Math.random() * 2.5
-    )
+      -0.3 - Math.random() * 2.5,
+    );
     shard.rotation.set(
       Math.random() * Math.PI * 2,
       Math.random() * Math.PI * 2,
-      Math.random() * Math.PI * 2
-    )
+      Math.random() * Math.PI * 2,
+    );
     shard.userData = {
       rotSpeed: {
         x: (Math.random() - 0.5) * 0.3,
@@ -490,110 +511,114 @@ const createGlassShards = () => {
       floatSpeed: 0.3 + Math.random() * 0.4,
       floatAmplitude: 0.005 + Math.random() * 0.01,
       baseY: shard.position.y,
-    }
-    scene.add(shard)
-    glassShards.push(shard)
+    };
+    scene.add(shard);
+    glassShards.push(shard);
   }
-  console.log('[GaussianSplatBackground] Created', shardCount, 'glass shards with screen-space refraction')
-}
+  console.log(
+    "[GaussianSplatBackground] Created",
+    shardCount,
+    "glass shards with screen-space refraction",
+  );
+};
 
 // ---- Render loop --------------------------------------------------
-let lastTime = 0
-const FRAME_MS = 1000 / 60
+let lastTime = 0;
+const FRAME_MS = 1000 / 60;
 
 const updateCameraInfo = () => {
-  if (!camera) return
-  camPos.value.x = camera.position.x.toFixed(2)
-  camPos.value.y = camera.position.y.toFixed(2)
-  camPos.value.z = camera.position.z.toFixed(2)
-  
-  const dir = new THREE.Vector3()
-  camera.getWorldDirection(dir)
-  camDir.value.x = dir.x.toFixed(2)
-  camDir.value.y = dir.y.toFixed(2)
-  camDir.value.z = dir.z.toFixed(2)
-}
+  if (!camera) return;
+  camPos.value.x = camera.position.x.toFixed(2);
+  camPos.value.y = camera.position.y.toFixed(2);
+  camPos.value.z = camera.position.z.toFixed(2);
+
+  const dir = new THREE.Vector3();
+  camera.getWorldDirection(dir);
+  camDir.value.x = dir.x.toFixed(2);
+  camDir.value.y = dir.y.toFixed(2);
+  camDir.value.z = dir.z.toFixed(2);
+};
 
 const animate = (time = 0) => {
-  animationId = requestAnimationFrame(animate)
-  if (time - lastTime < FRAME_MS) return
-  lastTime = time
+  animationId = requestAnimationFrame(animate);
+  if (time - lastTime < FRAME_MS) return;
+  lastTime = time;
 
   // Apply parallax logic if camera is available
   if (camera && basePos && lookTarget) {
     // Reduce Y-axis parallax by half to keep the horizon stable
-    const targetX = basePos.x + (mouse.x * props.parallaxRange)
-    const targetY = basePos.y + (mouse.y * props.parallaxRange * 0.3)
-    
+    const targetX = basePos.x + mouse.x * props.parallaxRange;
+    const targetY = basePos.y + mouse.y * props.parallaxRange * 0.3;
+
     // Smoothly interpolate current camera position toward target position
-    camera.position.x += (targetX - camera.position.x) * 0.05
-    camera.position.y += (targetY - camera.position.y) * 0.05
-    
+    camera.position.x += (targetX - camera.position.x) * 0.05;
+    camera.position.y += (targetY - camera.position.y) * 0.05;
+
     // Always keep looking at the central target
-    camera.lookAt(lookTarget)
+    camera.lookAt(lookTarget);
   }
 
   // Smooth mouse calculation for shaders so the repulsion isn't jittery
-  smoothMouse.x += (mouse.x - smoothMouse.x) * 0.1
-  smoothMouse.y += (mouse.y - smoothMouse.y) * 0.1
+  smoothMouse.x += (mouse.x - smoothMouse.x) * 0.1;
+  smoothMouse.y += (mouse.y - smoothMouse.y) * 0.1;
 
   // Update custom shader uniforms
   if (splatMesh && splatMesh.userData.uniforms) {
-    splatMesh.userData.uniforms.time.value = time / 1000
-    splatMesh.userData.uniforms.uMouse.value.set(smoothMouse.x, smoothMouse.y)
-    splatMesh.userData.uniforms.uCameraPos.value.copy(camera.position)
+    splatMesh.userData.uniforms.time.value = time / 1000;
+    splatMesh.userData.uniforms.uMouse.value.set(smoothMouse.x, smoothMouse.y);
+    splatMesh.userData.uniforms.uCameraPos.value.copy(camera.position);
   }
 
   // Ensure SPARK's own updates occur if necessary (skipped for PointCloud)
-  if (splatMesh && typeof splatMesh.update === 'function') {
-    splatMesh.update({ time: time / 1000, viewToWorld: camera.matrixWorld, globalEdits: [] })
+  if (splatMesh && typeof splatMesh.update === "function") {
+    splatMesh.update({ time: time / 1000, viewToWorld: camera.matrixWorld, globalEdits: [] });
   }
 
   // Animate glass shards (slow tumble + float)
-  const t = time / 1000
+  const t = time / 1000;
   for (const shard of glassShards) {
-    const u = shard.userData
-    shard.rotation.x += u.rotSpeed.x * 0.016
-    shard.rotation.y += u.rotSpeed.y * 0.016
-    shard.rotation.z += u.rotSpeed.z * 0.016
-    shard.position.y = u.baseY + Math.sin(t * u.floatSpeed + u.floatOffset) * u.floatAmplitude
+    const u = shard.userData;
+    shard.rotation.x += u.rotSpeed.x * 0.016;
+    shard.rotation.y += u.rotSpeed.y * 0.016;
+    shard.rotation.z += u.rotSpeed.z * 0.016;
+    shard.position.y = u.baseY + Math.sin(t * u.floatSpeed + u.floatOffset) * u.floatAmplitude;
   }
 
   // Update glass shader time
-  if (glassUniforms) glassUniforms.time.value = t
+  if (glassUniforms) glassUniforms.time.value = t;
 
   // Two-pass rendering for screen-space refraction
   // Pass 1: Render scene WITHOUT glass shards to offscreen texture
-  for (const shard of glassShards) shard.visible = false
-  renderer.setRenderTarget(renderTarget)
-  renderer.render(scene, camera)
+  for (const shard of glassShards) shard.visible = false;
+  renderer.setRenderTarget(renderTarget);
+  renderer.render(scene, camera);
 
   // Pass 2: Render EVERYTHING (including glass reading from Pass 1 texture) to screen
-  for (const shard of glassShards) shard.visible = true
-  renderer.setRenderTarget(null)
-  renderer.render(scene, camera)
-  
-  if (status.value === 'ready' && overlayEnabled.value) {
-    updateCameraInfo()
+  for (const shard of glassShards) shard.visible = true;
+  renderer.setRenderTarget(null);
+  renderer.render(scene, camera);
+
+  if (status.value === "ready" && overlayEnabled.value) {
+    updateCameraInfo();
   }
-}
+};
 
 // ---- Lifecycle ----------------------------------------------------
-onMounted(()       => init().catch(console.error))
+onMounted(() => init().catch(console.error));
 onBeforeUnmount(() => {
-  window.removeEventListener('resize',    onResize)
-  window.removeEventListener('mousemove', onMouseMove)
-  if (animationId) cancelAnimationFrame(animationId)
+  window.removeEventListener("resize", onResize);
+  window.removeEventListener("mousemove", onMouseMove);
+  if (animationId) cancelAnimationFrame(animationId);
   // Dispose glass shards
   for (const shard of glassShards) {
-    shard.geometry.dispose()
-    scene.remove(shard)
+    shard.geometry.dispose();
+    scene.remove(shard);
   }
-  glassShards = []
-  if (renderTarget) renderTarget.dispose()
-  if (splatMesh) splatMesh.dispose()
-  renderer?.dispose()
-})
+  glassShards = [];
+  if (renderTarget) renderTarget.dispose();
+  if (splatMesh) splatMesh.dispose();
+  renderer?.dispose();
+});
 </script>
 
 <style scoped>
@@ -616,7 +641,7 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   border: 1px solid #7db87d;
   color: #a8e6a3;
-  font-family: 'DotGothic16', monospace;
+  font-family: "DotGothic16", monospace;
   font-size: 1rem;
   pointer-events: none; /* Let clicks pass through */
   z-index: 101;
@@ -654,13 +679,19 @@ onBeforeUnmount(() => {
 
 .loading-text,
 .error-text {
-  font-family: 'DotGothic16', monospace;
+  font-family: "DotGothic16", monospace;
   font-size: 0.9rem;
   color: #7db87d;
 }
 
-.error-text { color: #e57373; }
+.error-text {
+  color: #e57373;
+}
 
-.fade-leave-active { transition: opacity 0.8s ease; }
-.fade-leave-to     { opacity: 0; }
+.fade-leave-active {
+  transition: opacity 0.8s ease;
+}
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

@@ -1,29 +1,29 @@
 <template>
   <div class="dancing-text" aria-label="text">
-    <span 
-      v-for="(char, index) in characters" 
-      :key="index" 
+    <span
+      v-for="(char, index) in characters"
+      :key="index"
       class="char"
       :style="{ animationDelay: `${index * 0.05}s` }"
     >
-      {{ char === ' ' ? '&nbsp;' : char }}
+      {{ char === " " ? "&nbsp;" : char }}
     </span>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed } from "vue";
 
 const props = defineProps({
   text: {
     type: String,
-    required: true
-  }
-})
+    required: true,
+  },
+});
 
 const characters = computed(() => {
-  return props.text.split('')
-})
+  return props.text.split("");
+});
 </script>
 
 <style scoped>
@@ -42,7 +42,8 @@ const characters = computed(() => {
 }
 
 @keyframes dance {
-  0%, 100% {
+  0%,
+  100% {
     transform: translateY(0);
   }
   50% {

@@ -1,0 +1,10 @@
+# Agents
+AGENTS.md
+
+# Node
+dist/
+node_modules/
+
+# Infra
+k8s-manifests/
+

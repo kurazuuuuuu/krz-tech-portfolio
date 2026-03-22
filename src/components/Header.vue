@@ -1,16 +1,11 @@
 <template>
-  <header :class="{ 'scrolled': isScrolled }">
+  <header :class="{ scrolled: isScrolled }">
     <nav class="navbar">
       <div class="nav-brand">
         <h2>krz-tech.net</h2>
       </div>
       <div class="nav-links">
-        <a 
-          v-for="item in navItems" 
-          :key="item.id"
-          @click="scrollTo(item.id)" 
-          class="nav-link"
-        >
+        <a v-for="item in navItems" :key="item.id" @click="scrollTo(item.id)" class="nav-link">
           {{ item.label }}
         </a>
         <a href="https://foto.krz-tech.net/" class="nav-link icon-link" target="_blank">
@@ -25,38 +20,38 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onUnmounted } from 'vue'
-import { BrandGithubIcon, PhotoIcon } from 'vue-tabler-icons'
+import { ref, onMounted, onUnmounted } from "vue";
+import { BrandGithubIcon, PhotoIcon } from "vue-tabler-icons";
 
-const isScrolled = ref(false)
+const isScrolled = ref(false);
 
 const navItems = [
-  { id: 'about', label: 'About' },
-  { id: 'projects', label: 'Projects' },
-  { id: 'contact', label: 'Contact' }
-]
+  { id: "about", label: "About" },
+  { id: "projects", label: "Projects" },
+  { id: "contact", label: "Contact" },
+];
 
 const handleScroll = () => {
-  isScrolled.value = window.scrollY > 50
-}
+  isScrolled.value = window.scrollY > 50;
+};
 
 const scrollTo = (elementId) => {
-  const element = document.getElementById(elementId)
+  const element = document.getElementById(elementId);
   if (element) {
     element.scrollIntoView({
-      behavior: 'smooth',
-      block: 'start'
-    })
+      behavior: "smooth",
+      block: "start",
+    });
   }
-}
+};
 
 onMounted(() => {
-  window.addEventListener('scroll', handleScroll)
-})
+  window.addEventListener("scroll", handleScroll);
+});
 
 onUnmounted(() => {
-  window.removeEventListener('scroll', handleScroll)
-})
+  window.removeEventListener("scroll", handleScroll);
+});
 </script>
 
 <style scoped>
@@ -135,7 +130,7 @@ header.scrolled .navbar {
   .navbar {
     padding: 1rem;
   }
-  
+
   header.scrolled .navbar {
     padding: 0.5rem 1rem;
   }
@@ -143,7 +138,7 @@ header.scrolled .navbar {
   .nav-links {
     gap: 1rem;
   }
-  
+
   .nav-link {
     padding: 0.25rem 0.5rem;
     font-size: 0.9rem;

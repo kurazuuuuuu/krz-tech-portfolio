@@ -14,9 +14,9 @@ spec:
         app: krz-tech-portfolio
     spec:
       imagePullSecrets:
-      - name: ghcr-registry-secret
+        - name: ghcr-registry-secret
       containers:
-      - name: krz-tech-portfolio
-        image: ghcr.io/kurazuuuuuu/krz-tech-portfolio:latest
-        ports:
-        - containerPort: 80
+        - name: krz-tech-portfolio
+          image: ghcr.io/kurazuuuuuu/krz-tech-portfolio:latest
+          ports:
+            - containerPort: 80

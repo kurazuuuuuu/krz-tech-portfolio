@@ -4,14 +4,17 @@
     <section id="about" class="hero">
       <div class="hero-content animate-on-scroll">
         <div class="hero-avatar">
-          <img src="/img/icon.webp" alt="Profile" class="avatar" loading="lazy">
+          <img src="/img/icon.webp" alt="Profile" class="avatar" loading="lazy" />
         </div>
         <h1 class="hero-title">{{ profile.name }}</h1>
         <p class="hero-subtitle">{{ profile.description }}</p>
         <div class="hero-skills">
-          <span v-for="(skill, index) in profile.skills" :key="skill.name" 
-                class="skill-tag" 
-                :style="{ animationDelay: (1.5 + index * 0.1) + 's' }">
+          <span
+            v-for="(skill, index) in profile.skills"
+            :key="skill.name"
+            class="skill-tag"
+            :style="{ animationDelay: 1.5 + index * 0.1 + 's' }"
+          >
             <component :is="skill.icon" size="18" />
             {{ skill.name }}
           </span>
@@ -52,9 +55,19 @@
           <p>返事がない...</p>
         </div>
         <div v-else class="projects-grid">
-          <div v-for="project in projects" :key="project.id" class="project-card animate-on-scroll" ref="projectCards">
+          <div
+            v-for="project in projects"
+            :key="project.id"
+            class="project-card animate-on-scroll"
+            ref="projectCards"
+          >
             <div class="project-images">
-              <img :src="`/img/projects/${project.id}.webp`" alt="Project" class="project-image" loading="lazy">
+              <img
+                :src="`/img/projects/${project.id}.webp`"
+                alt="Project"
+                class="project-image"
+                loading="lazy"
+              />
             </div>
             <div class="project-content">
               <h3>{{ project.name }}</h3>
@@ -67,7 +80,9 @@
               </div>
               <div class="project-links">
                 <a :href="project.deploy_url" class="project-link" target="_blank"><HomeIcon /></a>
-                <a :href="project.github_url" class="project-link" target="_blank"><BrandGithubIcon /></a>
+                <a :href="project.github_url" class="project-link" target="_blank"
+                  ><BrandGithubIcon
+                /></a>
               </div>
             </div>
           </div>
@@ -82,16 +97,21 @@
           <DancingText text="Let's Connect" />
         </h2>
         <div class="contact-content animate-on-scroll">
-          <p class="contact-text">どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！</p>
+          <p class="contact-text">
+            どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！
+          </p>
           <a href="mailto:contact@krz-tech.net" class="contact-email">
             <MailIcon :size="24" />
             contact@krz-tech.net
           </a>
           <div class="social-links">
-            <a v-for="link in socialLinks" :key="link.name" 
-                :href="link.url" 
-                class="social-link" 
-                target="_blank">
+            <a
+              v-for="link in socialLinks"
+              :key="link.name"
+              :href="link.url"
+              class="social-link"
+              target="_blank"
+            >
               <component :is="link.icon" :size="20" />
               {{ link.name }}
             </a>
@@ -103,12 +123,19 @@
 </template>
 
 <script>
-import { HomeIcon, BrandTwitterIcon, BrandGithubIcon, BrandDiscordIcon, BookIcon, MailIcon } from 'vue-tabler-icons'
-import { convertWithTechIcons } from '../utils/techIcons'
-import DancingText from './DancingText.vue'
+import {
+  HomeIcon,
+  BrandTwitterIcon,
+  BrandGithubIcon,
+  BrandDiscordIcon,
+  BookIcon,
+  MailIcon,
+} from "vue-tabler-icons";
+import { convertWithTechIcons } from "../utils/techIcons";
+import DancingText from "./DancingText.vue";
 
 export default {
-  name: 'Main',
+  name: "Main",
   components: {
     HomeIcon,
     BrandTwitterIcon,
@@ -116,50 +143,53 @@ export default {
     BrandDiscordIcon,
     BookIcon,
     MailIcon,
-    DancingText
+    DancingText,
   },
   data() {
     return {
       profile: {
-        name: 'くらず / kurazu',
-        description: 'Backend & Infrastructure Enginner',
-        skills: ['VR / XR', 'Python', 'JavaScript', 'Linux', "Network"].map(convertWithTechIcons)
+        name: "くらず / kurazu",
+        description: "Backend & Infrastructure Enginner",
+        skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
       },
-      introduction: 'こんにちは、くらずと申します。福岡の29卒情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスはほとんどをその自宅鯖にデプロイしています。\nハッカソンやイベントに現れる時があると思うので、よろしくお願いします！',
+      introduction:
+        "こんにちは、くらずと申します。福岡の29卒情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスはほとんどをその自宅鯖にデプロイしています。\nハッカソンやイベントに現れる時があると思うので、よろしくお願いします！",
       projects: [
         {
-          id: 'github-fairy',
-          name: 'Fairy',
-          technologies: ['Discord.py', 'Vue.js', 'Gemini 2.5 Flash Lite', 'MongoDB'].map(convertWithTechIcons),
-          deploy_url: 'https://fairy.krz-tech.net',
-          github_url: 'https://github.com/kurazuuuuuu/fairy'
-        }
+          id: "github-fairy",
+          name: "Fairy",
+          technologies: ["Discord.py", "Vue.js", "Gemini 2.5 Flash Lite", "MongoDB"].map(
+            convertWithTechIcons,
+          ),
+          deploy_url: "https://fairy.krz-tech.net",
+          github_url: "https://github.com/kurazuuuuuu/fairy",
+        },
       ],
       socialLinks: [
-        { 
-          name: 'Twitter', 
-          url: 'https://twitter.com/kurazu_vrc', 
-          icon: 'BrandTwitterIcon'
-        },
-        { 
-          name: 'GitHub', 
-          url: 'https://github.com/kurazuuuuuu/', 
-          icon: 'BrandGithubIcon'
+        {
+          name: "Twitter",
+          url: "https://twitter.com/kurazu_vrc",
+          icon: "BrandTwitterIcon",
         },
         {
-          name: 'Zenn',
-          url: 'https://zenn.dev/krz_tech',
-          icon: 'BookIcon'
-        }
-      ]
-    }
+          name: "GitHub",
+          url: "https://github.com/kurazuuuuuu/",
+          icon: "BrandGithubIcon",
+        },
+        {
+          name: "Zenn",
+          url: "https://zenn.dev/krz_tech",
+          icon: "BookIcon",
+        },
+      ],
+    };
   },
   mounted() {
-    this.setupScrollAnimations()
+    this.setupScrollAnimations();
     this.$nextTick(() => {
       // this.setupTiltEffect() // Removed per user request
-    })
-    this.updateProjectDescriptions()
+    });
+    this.updateProjectDescriptions();
   },
   methods: {
     async fetchGitHubDescription(githubUrl) {
@@ -169,14 +199,14 @@ export default {
 
         const owner = match[1];
         const repo = match[2];
-        
+
         const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
-        if (!response.ok) throw new Error('GitHub API request failed');
-        
+        if (!response.ok) throw new Error("GitHub API request failed");
+
         const data = await response.json();
         return data.description;
       } catch (error) {
-        console.warn('Failed to fetch GitHub description:', error);
+        console.warn("Failed to fetch GitHub description:", error);
         return null;
       }
     },
@@ -191,29 +221,32 @@ export default {
       }
     },
     setupScrollAnimations() {
-      const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-in')
-          }
-        })
-      }, { threshold: 0.1 })
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add("animate-in");
+            }
+          });
+        },
+        { threshold: 0.1 },
+      );
 
-      document.querySelectorAll('.animate-on-scroll').forEach(el => {
-        observer.observe(el)
-      })
+      document.querySelectorAll(".animate-on-scroll").forEach((el) => {
+        observer.observe(el);
+      });
     },
     scrollTo(elementId) {
-      const element = document.getElementById(elementId)
+      const element = document.getElementById(elementId);
       if (element) {
         element.scrollIntoView({
-          behavior: 'smooth',
-          block: 'start'
-        })
+          behavior: "smooth",
+          block: "start",
+        });
       }
     },
-  }
-}
+  },
+};
 </script>
 
 <style scoped>
@@ -289,11 +322,11 @@ export default {
   font-weight: 700;
   color: #2d5a2d;
   margin-bottom: 1rem;
-  text-shadow: 2px 2px 0 #a8e6a3, 4px 4px 0 #7db87d;
+  text-shadow:
+    2px 2px 0 #a8e6a3,
+    4px 4px 0 #7db87d;
   position: relative;
 }
-
-
 
 .hero-subtitle {
   font-size: 1.5rem;
@@ -377,9 +410,7 @@ export default {
   background: rgba(125, 184, 125, 0.2);
   border-color: #6ba86b;
   transform: translate(-1px, -1px);
-  
 }
-
 
 /* Introduction Section */
 .introduction {
@@ -416,9 +447,15 @@ export default {
   border: 1px solid rgba(0, 0, 0, 0.2);
 }
 
-.terminal-button.red { background: #ff5f56; }
-.terminal-button.yellow { background: #ffbd2e; }
-.terminal-button.green { background: #27c93f; }
+.terminal-button.red {
+  background: #ff5f56;
+}
+.terminal-button.yellow {
+  background: #ffbd2e;
+}
+.terminal-button.green {
+  background: #27c93f;
+}
 
 .terminal-title {
   flex-grow: 1;
@@ -458,7 +495,9 @@ export default {
   color: #2d5a2d;
   text-align: center;
   margin-bottom: 3rem;
-  text-shadow: 2px 2px 0 #a8e6a3, 4px 4px 0 #7db87d;
+  text-shadow:
+    2px 2px 0 #a8e6a3,
+    4px 4px 0 #7db87d;
 }
 
 .projects-grid {
@@ -580,8 +619,6 @@ export default {
   line-height: 1.6;
 }
 
-
-
 /* Contact Section */
 .contact {
   padding: 5rem 0;
@@ -653,29 +690,29 @@ export default {
   .hero-title {
     font-size: 2.5rem;
   }
-  
+
   .hero-subtitle {
     font-size: 1.2rem;
   }
-  
+
   .hero-actions {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .btn {
     width: 200px;
   }
-  
+
   .projects-grid {
     grid-template-columns: 1fr;
   }
-  
+
   .social-links {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .social-link {
     width: 200px;
     justify-content: center;
@@ -686,20 +723,20 @@ export default {
   .container {
     padding: 0 1rem;
   }
-  
+
   .hero {
     padding: 1rem;
   }
-  
+
   .avatar {
     width: 120px;
     height: 120px;
   }
-  
+
   .hero-title {
     font-size: 2rem;
   }
-  
+
   .section-title {
     font-size: 2rem;
   }

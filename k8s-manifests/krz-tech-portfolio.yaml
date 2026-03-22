@@ -1,4 +1,3 @@
-
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
@@ -27,14 +26,14 @@ spec:
     server: https://kubernetes.default.svc
     namespace: argocd-prod
   ignoreDifferences:
-  - group: kustomize.config.k8s.io
-    kind: Kustomization
-    jsonPointers:
-    - /images
-  - group: apps
-    kind: Deployment
-    jsonPointers:
-    - /spec/template/spec/containers/0/image
+    - group: kustomize.config.k8s.io
+      kind: Kustomization
+      jsonPointers:
+        - /images
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/spec/containers/0/image
   syncPolicy:
     automated:
       prune: true

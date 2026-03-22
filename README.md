@@ -1,11 +1,12 @@
 # [ポートフォリオサイト](https://krz-tech.net)
 
 ## 使用している技術
+
 - **Framework**: Vue.js 3 / Vite
 - **3D / Graphics**:
   - Three.js
     - SPARK (3DGSレンダー)
-  <!-- - tsParticles -->
+    <!-- - tsParticles -->
 - **Animation**:
   - Lottie (アニメーション表示)
   - Vanilla-tilt.js
