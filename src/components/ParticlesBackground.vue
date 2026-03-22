@@ -1,84 +1,81 @@
 <template>
   <div id="tsparticles-container">
-    <vue-particles
-      id="tsparticles"
-      :options="options"
-    />
+    <vue-particles id="tsparticles" :options="options" />
   </div>
 </template>
 
 <script>
 export default {
-  name: 'ParticlesBackground',
+  name: "ParticlesBackground",
   data() {
     return {
       options: {
         fullScreen: {
-          enable: false
+          enable: false,
         },
         background: {
           color: {
-            value: "transparent"
-          }
+            value: "transparent",
+          },
         },
         fpsLimit: 120,
         interactivity: {
           events: {
             onClick: {
               enable: false,
-              mode: "push"
+              mode: "push",
             },
             onHover: {
               enable: true,
-              mode: ["grab", "bubble"]
+              mode: ["grab", "bubble"],
             },
-            resize: true
+            resize: true,
           },
           modes: {
             bubble: {
               distance: 200,
               duration: 2,
               opacity: 1,
-              size: 12
+              size: 12,
             },
             push: {
-              quantity: 4
+              quantity: 4,
             },
             grab: {
               distance: 140,
               links: {
-                opacity: 1
-              }
-            }
-          }
+                opacity: 1,
+              },
+            },
+          },
         },
         particles: {
           color: {
-            value: ["#7db87d", "#a8e6a3", "#6ba86b"]
+            value: ["#7db87d", "#a8e6a3", "#6ba86b"],
           },
           links: {
             color: "#7db87d",
             distance: 150,
             enable: true,
             opacity: 0.8,
-            width: 2
+            width: 2,
           },
           move: {
             direction: "none",
             enable: true,
             outModes: {
-              default: "out"
+              default: "out",
             },
             random: true,
             speed: 1,
-            straight: false
+            straight: false,
           },
           number: {
             density: {
               enable: true,
-              area: 800
+              area: 800,
             },
-            value: 33
+            value: 33,
           },
           opacity: {
             value: 0.5,
@@ -87,21 +84,21 @@ export default {
               enable: true,
               speed: 2,
               opacity_min: 0.1,
-              sync: false
-            }
+              sync: false,
+            },
           },
           shape: {
             type: ["triangle", "edge", "polygon"], // edge renders as square
             options: {
               polygon: [
                 {
-                  sides: 5
+                  sides: 5,
                 },
                 {
-                  sides: 6
-                }
-              ]
-            }
+                  sides: 6,
+                },
+              ],
+            },
           },
           size: {
             value: { min: 3.6, max: 9.6 },
@@ -110,8 +107,8 @@ export default {
               enable: true,
               speed: 2,
               size_min: 0.1,
-              sync: false
-            }
+              sync: false,
+            },
           },
           rotate: {
             value: 0,
@@ -120,15 +117,15 @@ export default {
             animation: {
               enable: true,
               speed: 10,
-              sync: false
-            }
-          }
+              sync: false,
+            },
+          },
         },
-        detectRetina: true
-      }
-    }
-  }
-}
+        detectRetina: true,
+      },
+    };
+  },
+};
 </script>
 
 <style scoped>

@@ -7,40 +7,40 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from 'vue'
-import lottie from 'lottie-web'
+import { ref, onMounted, onBeforeUnmount } from "vue";
+import lottie from "lottie-web";
 
-const showAnimation = ref(true)
-const animationContainer = ref(null)
-let animation = null
+const showAnimation = ref(true);
+const animationContainer = ref(null);
+let animation = null;
 
 onMounted(() => {
   animation = lottie.loadAnimation({
     container: animationContainer.value,
-    renderer: 'svg',
+    renderer: "svg",
     loop: false,
     autoplay: true,
-    path: '/simple_intro_animation.json?v=' + Date.now(),
+    path: "/simple_intro_animation.json?v=" + Date.now(),
     rendererSettings: {
-      preserveAspectRatio: 'xMidYMid slice',
-      viewBoxOnly: true
-    }
-  })
+      preserveAspectRatio: "xMidYMid slice",
+      viewBoxOnly: true,
+    },
+  });
 
   // レスポンシブ対応
-  animation.resize()
+  animation.resize();
 
   // 1.3秒後にフェードアウト開始
   setTimeout(() => {
-    showAnimation.value = false
-  }, 1300)
-})
+    showAnimation.value = false;
+  }, 1300);
+});
 
 onBeforeUnmount(() => {
   if (animation) {
-    animation.destroy()
+    animation.destroy();
   }
-})
+});
 </script>
 
 <style scoped>

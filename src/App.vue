@@ -9,7 +9,7 @@
       :point-size="0.02"
       :camera-position="[0, 0.3, -0.5]"
       :camera-look-at="[0, 0.09, -1]"
-      :scene-rotation="[1, 0, 0, 0.3]" 
+      :scene-rotation="[1, 0, 0, 0.3]"
       :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
     />
@@ -25,15 +25,15 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from 'vue'
-import IntroAnimation from './components/IntroAnimation.vue'
-import Header from './components/Header.vue'
-import Main from './components/Main.vue'
-import Footer from './components/Footer.vue'
+import { defineAsyncComponent } from "vue";
+import IntroAnimation from "./components/IntroAnimation.vue";
+import Header from "./components/Header.vue";
+import Main from "./components/Main.vue";
+import Footer from "./components/Footer.vue";
 
-const GaussianSplatBackground = defineAsyncComponent(() =>
-  import('./components/GaussianSplatBackground.vue')
-)
+const GaussianSplatBackground = defineAsyncComponent(
+  () => import("./components/GaussianSplatBackground.vue"),
+);
 
 // 画像ポイントクラウド版 (フォールバック用)
 // const ThreeBackground = defineAsyncComponent(() =>
@@ -41,45 +41,43 @@ const GaussianSplatBackground = defineAsyncComponent(() =>
 // )
 
 export default {
-  name: 'App',
+  name: "App",
   components: {
     GaussianSplatBackground,
     // ThreeBackground,
     IntroAnimation,
     Header,
     Main,
-    Footer
+    Footer,
   },
   data() {
     return {
       scrollProgress: 0,
       lastScrollY: 0,
       scrollProgress: 0,
-      lastScrollY: 0
-    }
+      lastScrollY: 0,
+    };
   },
   mounted() {
-    window.addEventListener('scroll', this.updateScrollProgress)
-    window.addEventListener('scroll', this.updateScrollProgress)
+    window.addEventListener("scroll", this.updateScrollProgress);
+    window.addEventListener("scroll", this.updateScrollProgress);
   },
   beforeUnmount() {
-    window.removeEventListener('scroll', this.updateScrollProgress)
+    window.removeEventListener("scroll", this.updateScrollProgress);
   },
   methods: {
-
     updateScrollProgress() {
-      const scrollTop = window.pageYOffset
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight
-      this.scrollProgress = (scrollTop / docHeight) * 100
-      
-      const scrollDelta = scrollTop - this.lastScrollY
-      this.lastScrollY = scrollTop
-      
-      this.lastScrollY = scrollTop
-    },
+      const scrollTop = window.pageYOffset;
+      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
+      this.scrollProgress = (scrollTop / docHeight) * 100;
 
-  }
-}
+      const scrollDelta = scrollTop - this.lastScrollY;
+      this.lastScrollY = scrollTop;
+
+      this.lastScrollY = scrollTop;
+    },
+  },
+};
 </script>
 
 <style>
@@ -100,10 +98,8 @@ export default {
   box-shadow: 0 2px 4px rgba(125, 184, 125, 0.3);
 }
 
-
-
 body {
-  font-family: 'DotGothic16', monospace;
+  font-family: "DotGothic16", monospace;
   background-color: #111820;
   min-height: 100vh;
   color: #2d5a2d;
@@ -113,7 +109,6 @@ body {
   image-rendering: crisp-edges;
   position: relative;
 }
-
 
 #app {
   min-height: 100vh;
