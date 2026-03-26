@@ -7,12 +7,48 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount } from "vue";
+import { computed, ref, watch, onMounted, onBeforeUnmount } from "vue";
 import lottie from "lottie-web";
+
+const props = defineProps({
+  sceneReady: {
+    type: Boolean,
+    default: false,
+  },
+  sceneFailed: {
+    type: Boolean,
+    default: false,
+  },
+  minDuration: {
+    type: Number,
+    default: 1300,
+  },
+});
 
 const showAnimation = ref(true);
 const animationContainer = ref(null);
+const minimumDurationElapsed = ref(false);
+const canClose = computed(
+  () => minimumDurationElapsed.value && (props.sceneReady || props.sceneFailed),
+);
+
 let animation = null;
+let minimumDurationTimer = null;
+
+const syncAnimationVisibility = () => {
+  if (canClose.value) {
+    showAnimation.value = false;
+  }
+};
+
+watch(canClose, syncAnimationVisibility, { immediate: true });
+
+watch(showAnimation, (isVisible) => {
+  if (!isVisible && animation) {
+    animation.destroy();
+    animation = null;
+  }
+});
 
 onMounted(() => {
   animation = lottie.loadAnimation({
@@ -30,13 +66,17 @@ onMounted(() => {
   // レスポンシブ対応
   animation.resize();
 
-  // 1.3秒後にフェードアウト開始
-  setTimeout(() => {
-    showAnimation.value = false;
-  }, 1300);
+  minimumDurationTimer = window.setTimeout(() => {
+    minimumDurationElapsed.value = true;
+    syncAnimationVisibility();
+  }, props.minDuration);
 });
 
 onBeforeUnmount(() => {
+  if (minimumDurationTimer) {
+    window.clearTimeout(minimumDurationTimer);
+  }
+
   if (animation) {
     animation.destroy();
   }
