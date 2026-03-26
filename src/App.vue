@@ -12,12 +12,14 @@
       :scene-rotation="[1, 0, 0, 0.3]"
       :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
+      @ready="handleSplatReady"
+      @error="handleSplatError"
     />
 
     <!-- 画像ポイントクラウド版 (フォールバック用) -->
     <!-- <ThreeBackground /> -->
 
-    <IntroAnimation />
+    <IntroAnimation :scene-ready="isSplatReady" :scene-failed="isSplatFailed" />
     <Header />
     <Main />
     <Footer />
@@ -25,15 +27,11 @@
 </template>
 
 <script>
-import { defineAsyncComponent } from "vue";
+import GaussianSplatBackground from "./components/GaussianSplatBackground.vue";
 import IntroAnimation from "./components/IntroAnimation.vue";
 import Header from "./components/Header.vue";
 import Main from "./components/Main.vue";
 import Footer from "./components/Footer.vue";
-
-const GaussianSplatBackground = defineAsyncComponent(
-  () => import("./components/GaussianSplatBackground.vue"),
-);
 
 // 画像ポイントクラウド版 (フォールバック用)
 // const ThreeBackground = defineAsyncComponent(() =>
@@ -53,28 +51,28 @@ export default {
   data() {
     return {
       scrollProgress: 0,
-      lastScrollY: 0,
-      scrollProgress: 0,
-      lastScrollY: 0,
+      isSplatReady: false,
+      isSplatFailed: false,
     };
   },
   mounted() {
-    window.addEventListener("scroll", this.updateScrollProgress);
     window.addEventListener("scroll", this.updateScrollProgress);
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.updateScrollProgress);
   },
   methods: {
+    handleSplatReady() {
+      this.isSplatReady = true;
+      this.isSplatFailed = false;
+    },
+    handleSplatError() {
+      this.isSplatFailed = true;
+    },
     updateScrollProgress() {
       const scrollTop = window.pageYOffset;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
       this.scrollProgress = (scrollTop / docHeight) * 100;
-
-      const scrollDelta = scrollTop - this.lastScrollY;
-      this.lastScrollY = scrollTop;
-
-      this.lastScrollY = scrollTop;
     },
   },
 };
