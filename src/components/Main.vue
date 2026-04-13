@@ -71,7 +71,7 @@
             </div>
             <div class="project-content">
               <h3>{{ project.name }}</h3>
-              <p>{{ project.description }}</p>
+              <p class="project-description">{{ project.description }}</p>
               <div class="project-tech">
                 <span v-for="tech in project.technologies" :key="tech.name" class="tech-tag">
                   <component :is="tech.icon" size="16" />
@@ -79,8 +79,18 @@
                 </span>
               </div>
               <div class="project-links">
-                <a :href="project.deploy_url" class="project-link" target="_blank"><HomeIcon /></a>
-                <a :href="project.github_url" class="project-link" target="_blank"
+                <a
+                  v-if="project.deploy_url"
+                  :href="project.deploy_url"
+                  class="project-link"
+                  target="_blank"
+                  ><HomeIcon
+                /></a>
+                <a
+                  v-if="project.github_url"
+                  :href="project.github_url"
+                  class="project-link"
+                  target="_blank"
                   ><BrandGithubIcon
                 /></a>
               </div>
@@ -152,12 +162,52 @@ export default {
         description: "Backend & Infrastructure Enginner",
         skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
       },
-      introduction:
-        "こんにちは、くらずと申します。福岡の29卒情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスはほとんどをその自宅鯖にデプロイしています。\nハッカソンやイベントに現れる時があると思うので、よろしくお願いします！",
+      introduction: [
+        "こんにちは、「くらず / kurazu」 と申します。",
+        "",
+        "- 福岡県にある 情報系専門学校 の29卒学生",
+        "- 2026年4月より 「Iwaken Lab.」 にメンバー加入",
+        "",
+        "> 技術領域",
+        "- バックエンド (Python)",
+        "- インフラ (オンプレ、クラウド(AWS, GCP))",
+        "   - Cloudflare",
+        "   - Docker, Kubernetes",
+        "   - ProxmoxVE, BS (VM/CT)",
+        "",
+        "> メインじゃないけどよく使う技術",
+        "- AI / ML (エージェント・LLM・Diffusion)",
+        "- VR / XR (VRChat, WebXR)",
+        "",
+        "> コメント",
+        "自宅でサーバーを運用しています。(デスクトップ x 2, ミニPC x 1, L3スイッチ x 1)",
+        "実験・開発環境だったり、なんでも汎用的に使用しているためすごく便利です。なお電気代。",
+        "ハッカソンやイベントに現れる時があると思うので、その時はよろしくお願いします！",
+      ].join("\n"),
       projects: [
+        {
+          id: "perugraph",
+          name: "ペルグラフ / Perugraph (in Dev)",
+          description: [
+            "VRChat コミュニティのためのフォトアルバムプラットフォーム",
+            "",
+            "Discordサーバーと紐づけ、アルバムを作成し、各サーバーでそのアルバムを運営してもらうことをコンセプトにしています。",
+            "",
+            "「Nitro入ってないけど...8Kとか綺麗な画像を非圧縮で送信したい...」そんな願いを解決します。",
+          ].join("\n"),
+          technologies: ["Kubernetes", "Cloudflare", "Discord.py", "Vue.js"].map(
+            convertWithTechIcons,
+          ),
+          deploy_url: "https://beta.perugraph.app",
+          github_url: null,
+        },
         {
           id: "github-fairy",
           name: "Fairy",
+          description: [
+            "Discord 上で動作するアプリケーションです。",
+            "生成AIと Web フロントエンドを組み合わせて、日常的に触りやすい体験を目指して開発しています。",
+          ].join("\n"),
           technologies: ["Discord.py", "Vue.js", "Gemini 2.5 Flash Lite", "MongoDB"].map(
             convertWithTechIcons,
           ),
@@ -518,6 +568,10 @@ export default {
   box-shadow: 0 8px 32px rgba(125, 184, 125, 0.2);
   background: rgba(40, 75, 40, 0.9);
   border-color: rgba(125, 184, 125, 0.6);
+}
+
+.project-description {
+  white-space: pre-wrap;
 }
 
 .project-image {

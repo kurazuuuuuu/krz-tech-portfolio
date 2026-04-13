@@ -11,6 +11,8 @@ import {
   DatabaseIcon,
   CodeIcon,
   BrandGoogleIcon,
+  BrandCloudflareIcon,
+  BrandDockerIcon,
 } from "vue-tabler-icons";
 
 export const convertWithTechIcons = (techName) => {
@@ -42,6 +44,10 @@ export const convertWithTechIcons = (techName) => {
     icon = DatabaseIcon;
   } else if (lowerName.includes("gemini")) {
     icon = BrandGoogleIcon;
+  } else if (lowerName.includes("cloudflare")) {
+    icon = BrandCloudflareIcon;
+  } else if (lowerName.includes("docker") || lowerName.includes("kubernetes")) {
+    icon = BrandDockerIcon;
   } else {
     icon = CodeIcon; // Default icon
   }
