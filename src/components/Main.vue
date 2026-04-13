@@ -71,7 +71,7 @@
             </div>
             <div class="project-content">
               <h3>{{ project.name }}</h3>
-              <p>{{ project.description }}</p>
+              <p class="project-description">{{ project.description }}</p>
               <div class="project-tech">
                 <span v-for="tech in project.technologies" :key="tech.name" class="tech-tag">
                   <component :is="tech.icon" size="16" />
@@ -79,8 +79,18 @@
                 </span>
               </div>
               <div class="project-links">
-                <a :href="project.deploy_url" class="project-link" target="_blank"><HomeIcon /></a>
-                <a :href="project.github_url" class="project-link" target="_blank"
+                <a
+                  v-if="project.deploy_url"
+                  :href="project.deploy_url"
+                  class="project-link"
+                  target="_blank"
+                  ><HomeIcon
+                /></a>
+                <a
+                  v-if="project.github_url"
+                  :href="project.github_url"
+                  class="project-link"
+                  target="_blank"
                   ><BrandGithubIcon
                 /></a>
               </div>
@@ -173,8 +183,28 @@ export default {
       ].join("\n"),
       projects: [
         {
+          id: "perugraph",
+          name: "ペルグラフ / Perugraph (in Dev)",
+          description: [
+            "VRChat コミュニティのためのフォトアルバムプラットフォーム",
+            "",
+            "Discordサーバーと紐づけ、アルバムを作成し、各サーバーでそのアルバムを運営してもらうことをコンセプトにしています。",
+            "",
+            "「Nitro入ってないけど...8Kとか綺麗な画像を非圧縮で送信したい...」そんな願いを解決します。",
+          ].join("\n"),
+          technologies: ["Kubernetes", "Cloudflare", "Discord.py", "Vue.js"].map(
+            convertWithTechIcons,
+          ),
+          deploy_url: "https://beta.perugraph.app",
+          github_url: null,
+        },
+        {
           id: "github-fairy",
           name: "Fairy",
+          description: [
+            "Discord 上で動作するアプリケーションです。",
+            "生成AIと Web フロントエンドを組み合わせて、日常的に触りやすい体験を目指して開発しています。",
+          ].join("\n"),
           technologies: ["Discord.py", "Vue.js", "Gemini 2.5 Flash Lite", "MongoDB"].map(
             convertWithTechIcons,
           ),
@@ -535,6 +565,10 @@ export default {
   box-shadow: 0 8px 32px rgba(125, 184, 125, 0.2);
   background: rgba(40, 75, 40, 0.9);
   border-color: rgba(125, 184, 125, 0.6);
+}
+
+.project-description {
+  white-space: pre-wrap;
 }
 
 .project-image {
