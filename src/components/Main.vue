@@ -152,8 +152,25 @@ export default {
         description: "Backend & Infrastructure Enginner",
         skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
       },
-      introduction:
-        "こんにちは、くらずと申します。福岡の29卒情報専門学生です。\n主にインフラやバックエンドを触っています。自作PCサーバーも合わせて3機をProxmoxクラスタとして運用していて、自分で作成したサービスはほとんどをその自宅鯖にデプロイしています。\nハッカソンやイベントに現れる時があると思うので、よろしくお願いします！",
+      introduction: [
+        "こんにちは、「くらず / kurazu」 と申します。",
+        "",
+        "- 福岡県にある 情報系専門学校 の29卒学生",
+        "- 2026年4月より 「Iwaken Lab.」 にメンバー加入",
+        "",
+        "> 技術領域",
+        "- バックエンド (Python)",
+        "- インフラ (オンプレ、クラウド(AWS, GCP))",
+        "",
+        "> メインじゃないけどよく使う技術",
+        "- AI / ML (エージェント・LLM・Diffusion)",
+        "- VR / XR (VRChat, WebXR)",
+        "",
+        "> コメント",
+        "自宅でサーバーを運用しています。(デスクトップ x 2, ミニPC x 1, L3スイッチ x 1)",
+        "実験・開発環境だったり、なんでも汎用的に使用しているためすごく便利です。なお電気代。",
+        "ハッカソンやイベントに現れる時があると思うので、その時はよろしくお願いします！",
+      ].join("\n"),
       projects: [
         {
           id: "github-fairy",
