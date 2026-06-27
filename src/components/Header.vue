@@ -5,13 +5,29 @@
         <h2>krz-tech.net</h2>
       </div>
       <div class="nav-links">
-        <a v-for="item in navItems" :key="item.id" @click="scrollTo(item.id)" class="nav-link">
+        <a
+          v-for="item in navItems"
+          :key="item.id"
+          :href="`#${item.id}`"
+          class="nav-link"
+          @click.prevent="scrollTo(item.id)"
+        >
           {{ item.label }}
         </a>
-        <a href="https://foto.krz-tech.net/" class="nav-link icon-link" target="_blank">
+        <a
+          href="https://foto.krz-tech.net/"
+          class="nav-link icon-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <PhotoIcon :size="18"></PhotoIcon>
         </a>
-        <a href="https://github.com/kurazuuuuuu/" class="nav-link icon-link" target="_blank">
+        <a
+          href="https://github.com/kurazuuuuuu/"
+          class="nav-link icon-link"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
           <BrandGithubIcon :size="18"></BrandGithubIcon>
         </a>
       </div>
@@ -22,6 +38,7 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from "vue";
 import { BrandGithubIcon, PhotoIcon } from "vue-tabler-icons";
+import { scrollToSection } from "../utils/scrollToSection.js";
 
 const isScrolled = ref(false);
 
@@ -36,13 +53,7 @@ const handleScroll = () => {
 };
 
 const scrollTo = (elementId) => {
-  const element = document.getElementById(elementId);
-  if (element) {
-    element.scrollIntoView({
-      behavior: "smooth",
-      block: "start",
-    });
-  }
+  scrollToSection(elementId);
 };
 
 onMounted(() => {

@@ -55,15 +55,11 @@ export default {
   data() {
     return {
       scrollProgress: 0,
-      lastScrollY: 0,
-      // 3DGS 背景のロード完了フラグ (IntroAnimation の待機制御に使用)
       splatLoaded: false,
-      // 3DGS 背景のダウンロード進捗 0-100 (IntroAnimation のラインに反映)
       splatProgress: 0,
     };
   },
   mounted() {
-    window.addEventListener("scroll", this.updateScrollProgress);
     window.addEventListener("scroll", this.updateScrollProgress);
   },
   beforeUnmount() {
@@ -79,12 +75,7 @@ export default {
     updateScrollProgress() {
       const scrollTop = window.pageYOffset;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      this.scrollProgress = (scrollTop / docHeight) * 100;
-
-      const scrollDelta = scrollTop - this.lastScrollY;
-      this.lastScrollY = scrollTop;
-
-      this.lastScrollY = scrollTop;
+      this.scrollProgress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
     },
   },
 };
@@ -95,6 +86,14 @@ export default {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+html {
+  scroll-padding-top: 44px;
+}
+
+section[id] {
+  scroll-margin-top: 44px;
 }
 
 .progress-bar {

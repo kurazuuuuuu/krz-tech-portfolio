@@ -84,6 +84,7 @@
                   :href="project.deploy_url"
                   class="project-link"
                   target="_blank"
+                  rel="noopener noreferrer"
                   ><HomeIcon
                 /></a>
                 <a
@@ -91,6 +92,7 @@
                   :href="project.github_url"
                   class="project-link"
                   target="_blank"
+                  rel="noopener noreferrer"
                   ><BrandGithubIcon
                 /></a>
               </div>
@@ -121,6 +123,7 @@
               :href="link.url"
               class="social-link"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <component :is="link.icon" :size="20" />
               {{ link.name }}
@@ -142,6 +145,7 @@ import {
   MailIcon,
 } from "vue-tabler-icons";
 import { convertWithTechIcons } from "../utils/techIcons";
+import { scrollToSection } from "../utils/scrollToSection.js";
 import DancingText from "./DancingText.vue";
 
 export default {
@@ -158,12 +162,12 @@ export default {
   data() {
     return {
       profile: {
-        name: "くらず / kurazu",
-        description: "Backend & Infrastructure Enginner",
+        name: "くらず / Kurazu",
+        description: "Backend & Infrastructure Engineer",
         skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
       },
       introduction: [
-        "こんにちは、「くらず / kurazu」 と申します。",
+        "こんにちは、「くらず / Kurazu」 と申します。",
         "",
         "- 福岡県にある 情報系専門学校 の29卒学生",
         "- 2026年4月より 「Iwaken Lab.」 にメンバー加入",
@@ -287,13 +291,7 @@ export default {
       });
     },
     scrollTo(elementId) {
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
+      scrollToSection(elementId);
     },
   },
 };

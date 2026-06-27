@@ -2,11 +2,15 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-content">
-        <p>&copy; 2025 kurazu. Build with Vue.js</p>
+        <p>&copy; {{ year }} くらず / Kurazu. Built with Vue.js</p>
       </div>
     </div>
   </footer>
 </template>
+
+<script setup>
+const year = new Date().getFullYear();
+</script>
 
 <style scoped>
 .footer {
