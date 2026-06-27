@@ -117,6 +117,10 @@ let glassShards = [];
 let renderTarget = null; // Offscreen buffer for screen-space refraction
 let glassUniforms = null; // Shared uniforms for glass shader
 
+// Refraction is blurred by the distortion anyway, so a half-res background
+// buffer cuts Pass-1 fill rate to ~1/4 with no visible quality loss.
+const REFRACTION_SCALE = 0.5;
+
 // ---- Event Listeners ----------------------------------------------
 const onResize = () => {
   if (!renderer || !camera) return;
@@ -125,8 +129,10 @@ const onResize = () => {
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
   renderer.setSize(w, h);
-  // Resize offscreen render target too
-  if (renderTarget) renderTarget.setSize(w, h);
+  // Resize offscreen render target too (kept at reduced resolution)
+  if (renderTarget)
+    renderTarget.setSize(Math.round(w * REFRACTION_SCALE), Math.round(h * REFRACTION_SCALE));
+  // resolution stays full-res: it normalizes gl_FragCoord into 0-1 screen UVs
   if (glassUniforms) glassUniforms.resolution.value.set(w, h);
 };
 
@@ -134,6 +140,20 @@ const onMouseMove = (e) => {
   // Normalize mouse coordinates to -1 ... 1
   mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
   mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
+};
+
+// Pause the render loop while the tab is hidden to save GPU/battery
+const onVisibilityChange = () => {
+  if (document.hidden) {
+    if (animationId) {
+      cancelAnimationFrame(animationId);
+      animationId = null;
+    }
+  } else if (!animationId) {
+    // Reset the clock so the loop doesn't jump after a long pause
+    lastTime = 0;
+    animate();
+  }
 };
 
 // ---- Init ---------------------------------------------------------
@@ -166,11 +186,15 @@ const init = async () => {
 
   scene = new THREE.Scene();
 
-  // Offscreen render target for screen-space refraction
-  renderTarget = new THREE.WebGLRenderTarget(w, h, {
-    format: THREE.RGBAFormat,
-    type: THREE.UnsignedByteType,
-  });
+  // Offscreen render target for screen-space refraction (half-res, see REFRACTION_SCALE)
+  renderTarget = new THREE.WebGLRenderTarget(
+    Math.round(w * REFRACTION_SCALE),
+    Math.round(h * REFRACTION_SCALE),
+    {
+      format: THREE.RGBAFormat,
+      type: THREE.UnsignedByteType,
+    },
+  );
 
   // Add subtle ambient + directional lighting for glass highlights
   const ambientLight = new THREE.AmbientLight(0x7db87d, 0.3);
@@ -201,6 +225,7 @@ const init = async () => {
 
   window.addEventListener("resize", onResize);
   window.addEventListener("mousemove", onMouseMove);
+  document.addEventListener("visibilitychange", onVisibilityChange);
 
   // Create glass shards scattered in the scene
   createGlassShards();
@@ -222,6 +247,9 @@ const init = async () => {
           // Pre-allocate buffers
           const positions = new Float32Array(count * 3);
           const colors = new Float32Array(count * 3);
+          // Repurpose per-splat opacity the PointCloud would otherwise discard -> glow strength.
+          // (Point SIZE is kept uniform on purpose to preserve the crisp "dot" look.)
+          const opacities = new Float32Array(count);
 
           let validPoints = 0;
           const minAlpha = props.alphaThreshold / 255.0;
@@ -238,6 +266,8 @@ const init = async () => {
             colors[validPoints * 3 + 1] = color.g;
             colors[validPoints * 3 + 2] = color.b;
 
+            opacities[validPoints] = opacity;
+
             validPoints++;
           });
 
@@ -249,6 +279,10 @@ const init = async () => {
           geometry.setAttribute(
             "color",
             new THREE.BufferAttribute(colors.subarray(0, validPoints * 3), 3),
+          );
+          geometry.setAttribute(
+            "aOpacity",
+            new THREE.BufferAttribute(opacities.subarray(0, validPoints), 1),
           );
 
           const circleTexture = createCircleTexture();
@@ -290,6 +324,7 @@ const init = async () => {
               uniform vec3 uCameraPos;
               uniform vec3 uColorA;
               uniform vec3 uColorB;
+              attribute float aOpacity;
               varying vec3 vMixedColor;
               varying float vDepth;
             \n` + shader.vertexShader;
@@ -331,7 +366,8 @@ const init = async () => {
 
               // 4. Iridescence (Blend between uColorA and uColorB based on local Y position + time)
               float mixFactor = sin(position.y * 3.0 + time) * 0.5 + 0.5;
-              vMixedColor = mix(uColorA, uColorB, mixFactor) * brightness * 2.0;
+              // Modulate glow by the original splat opacity so denser structure reads brighter
+              vMixedColor = mix(uColorA, uColorB, mixFactor) * brightness * 2.0 * (0.4 + aOpacity * 0.6);
               
               // 5. Calculate Depth for Fog
               vDepth = ndcPos.z / ndcPos.w;
@@ -608,6 +644,7 @@ onMounted(() => init().catch(console.error));
 onBeforeUnmount(() => {
   window.removeEventListener("resize", onResize);
   window.removeEventListener("mousemove", onMouseMove);
+  document.removeEventListener("visibilitychange", onVisibilityChange);
   if (animationId) cancelAnimationFrame(animationId);
   // Dispose glass shards
   for (const shard of glassShards) {
@@ -616,7 +653,11 @@ onBeforeUnmount(() => {
   }
   glassShards = [];
   if (renderTarget) renderTarget.dispose();
-  if (splatMesh) splatMesh.dispose();
+  if (splatMesh) {
+    // THREE.Points has no dispose(); release its geometry/material instead
+    splatMesh.geometry.dispose();
+    splatMesh.material.dispose();
+  }
   renderer?.dispose();
 });
 </script>
