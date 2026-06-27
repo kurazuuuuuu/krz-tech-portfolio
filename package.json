@@ -10,6 +10,7 @@
   "dependencies": {
     "@sparkjsdev/spark": "^0.1.10",
     "@tabler/icons": "^3.40.0",
+    "@vueuse/motion": "^3.0.3",
     "lottie-web": "^5.13.0",
     "three": "^0.183.2",
     "vanilla-tilt": "^1.8.1",
