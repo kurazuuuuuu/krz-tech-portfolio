@@ -3,12 +3,24 @@
     <div class="container">
       <div class="footer-content">
         <p>&copy; {{ year }} くらず / Kurazu. Built with Vue.js</p>
+        <div class="footer-links">
+          <a
+            href="https://github.com/kurazuuuuuu/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+          >
+            <BrandGithubIcon :size="20" />
+          </a>
+        </div>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup>
+import { BrandGithubIcon } from "vue-tabler-icons";
+
 const year = new Date().getFullYear();
 </script>
 
@@ -45,8 +57,12 @@ const year = new Date().getFullYear();
   color: #4a7a4a;
   text-decoration: none;
   transition: all 0.3s ease;
-  padding: 0.25rem 0.5rem;
   border: 2px solid transparent;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer-links a:hover {

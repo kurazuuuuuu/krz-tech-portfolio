@@ -65,6 +65,9 @@ const CROWN_RISE = 60; // 王冠の高さ
 const VALLEY = 70; // 谷の水平オフセット
 
 const showAnimation = ref(true);
+const prefersReducedMotion = ref(
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
+);
 const w = ref(window.innerWidth);
 const h = ref(window.innerHeight);
 // 表示上の進捗。実ロード進捗へ滑らかに追従させてカクつきを防ぐ
@@ -115,7 +118,8 @@ const onResize = () => {
 const tick = () => {
   // ロード完了なら 100%、未完了なら実進捗を目標値にして滑らかに追従
   const target = props.ready ? 100 : props.progress;
-  displayProgress.value += (target - displayProgress.value) * 0.12;
+  const smoothing = prefersReducedMotion.value ? 1 : 0.12;
+  displayProgress.value += (target - displayProgress.value) * smoothing;
 
   // 描画済みの先端座標を取得してグローを追従させる
   if (pathEl.value) {
@@ -126,7 +130,10 @@ const tick = () => {
   }
 
   // 「最低表示時間が経過」かつ「ロード完了」かつ「線をほぼ引き切った」で閉じる
-  if (minElapsed && props.ready && displayProgress.value > 99.5) {
+  const progressDone = prefersReducedMotion.value
+    ? props.ready
+    : minElapsed && props.ready && displayProgress.value > 99.5;
+  if (progressDone) {
     displayProgress.value = 100;
     hide();
     return;
@@ -152,9 +159,18 @@ watch(
 onMounted(() => {
   window.addEventListener("resize", onResize);
   lastProgressAt = performance.now();
-  minTimer = setTimeout(() => {
+  if (prefersReducedMotion.value) {
     minElapsed = true;
-  }, props.minDuration);
+    displayProgress.value = props.ready ? 100 : props.progress;
+    if (props.ready) {
+      hide();
+      return;
+    }
+  } else {
+    minTimer = setTimeout(() => {
+      minElapsed = true;
+    }, props.minDuration);
+  }
   raf = requestAnimationFrame(tick);
 });
 
@@ -204,5 +220,11 @@ onBeforeUnmount(() => {
 
 .fade-leave-to {
   opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .fade-leave-active {
+    transition: none;
+  }
 }
 </style>

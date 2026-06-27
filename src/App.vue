@@ -20,7 +20,6 @@
     <!-- <ThreeBackground /> -->
 
     <IntroAnimation :ready="splatLoaded" :progress="splatProgress" />
-    <Header />
     <Main />
     <Footer />
   </div>
@@ -29,7 +28,6 @@
 <script>
 import { defineAsyncComponent } from "vue";
 import IntroAnimation from "./components/IntroAnimation.vue";
-import Header from "./components/Header.vue";
 import Main from "./components/Main.vue";
 import Footer from "./components/Footer.vue";
 
@@ -48,7 +46,6 @@ export default {
     GaussianSplatBackground,
     // ThreeBackground,
     IntroAnimation,
-    Header,
     Main,
     Footer,
   },
@@ -86,14 +83,6 @@ export default {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-}
-
-html {
-  scroll-padding-top: 44px;
-}
-
-section[id] {
-  scroll-margin-top: 44px;
 }
 
 .progress-bar {
