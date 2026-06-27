@@ -13,12 +13,13 @@
       :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
       @loaded="onSplatLoaded"
+      @progress="onSplatProgress"
     />
 
     <!-- 画像ポイントクラウド版 (フォールバック用) -->
     <!-- <ThreeBackground /> -->
 
-    <IntroAnimation :ready="splatLoaded" />
+    <IntroAnimation :ready="splatLoaded" :progress="splatProgress" />
     <Header />
     <Main />
     <Footer />
@@ -57,6 +58,8 @@ export default {
       lastScrollY: 0,
       // 3DGS 背景のロード完了フラグ (IntroAnimation の待機制御に使用)
       splatLoaded: false,
+      // 3DGS 背景のダウンロード進捗 0-100 (IntroAnimation のラインに反映)
+      splatProgress: 0,
     };
   },
   mounted() {
@@ -69,6 +72,9 @@ export default {
   methods: {
     onSplatLoaded() {
       this.splatLoaded = true;
+    },
+    onSplatProgress(p) {
+      this.splatProgress = p;
     },
     updateScrollProgress() {
       const scrollTop = window.pageYOffset;

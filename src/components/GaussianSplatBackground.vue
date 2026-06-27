@@ -89,9 +89,10 @@ const props = defineProps({
 });
 
 // ---- Emits --------------------------------------------------------
-// Fired once the splat finished loading (success OR failure), so a parent
-// (e.g. the intro animation) can stop waiting on the 3DGS asset.
-const emit = defineEmits(["loaded"]);
+// - "progress": download progress 0-100 (drives the intro loading line)
+// - "loaded": fired once loading finished (success OR failure), so a parent
+//   (e.g. the intro animation) can stop waiting on the 3DGS asset.
+const emit = defineEmits(["loaded", "progress"]);
 
 // ---- State --------------------------------------------------------
 const container = ref(null);
@@ -433,6 +434,7 @@ const init = async () => {
             // For chunks without total length header
             progress.value = Math.min((xhr.loaded / 30000000) * 100, 99);
           }
+          emit("progress", progress.value);
         },
         (err) => {
           reject(err);
