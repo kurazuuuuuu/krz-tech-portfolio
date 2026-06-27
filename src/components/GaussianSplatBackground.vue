@@ -88,6 +88,11 @@ const props = defineProps({
   },
 });
 
+// ---- Emits --------------------------------------------------------
+// Fired once the splat finished loading (success OR failure), so a parent
+// (e.g. the intro animation) can stop waiting on the 3DGS asset.
+const emit = defineEmits(["loaded"]);
+
 // ---- State --------------------------------------------------------
 const container = ref(null);
 const status = ref("loading"); // 'loading' | 'ready' | 'error'
@@ -436,9 +441,12 @@ const init = async () => {
     });
 
     status.value = "ready";
+    emit("loaded");
   } catch (err) {
     console.error("[GaussianSplatBackground] Failed to load splat via SPARK:", err);
     status.value = "error";
+    // Notify even on failure so the intro doesn't wait forever
+    emit("loaded");
   }
 };
 

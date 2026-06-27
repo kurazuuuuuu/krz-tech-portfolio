@@ -12,12 +12,13 @@
       :scene-rotation="[1, 0, 0, 0.3]"
       :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
+      @loaded="onSplatLoaded"
     />
 
     <!-- 画像ポイントクラウド版 (フォールバック用) -->
     <!-- <ThreeBackground /> -->
 
-    <IntroAnimation />
+    <IntroAnimation :ready="splatLoaded" />
     <Header />
     <Main />
     <Footer />
@@ -54,8 +55,8 @@ export default {
     return {
       scrollProgress: 0,
       lastScrollY: 0,
-      scrollProgress: 0,
-      lastScrollY: 0,
+      // 3DGS 背景のロード完了フラグ (IntroAnimation の待機制御に使用)
+      splatLoaded: false,
     };
   },
   mounted() {
@@ -66,6 +67,9 @@ export default {
     window.removeEventListener("scroll", this.updateScrollProgress);
   },
   methods: {
+    onSplatLoaded() {
+      this.splatLoaded = true;
+    },
     updateScrollProgress() {
       const scrollTop = window.pageYOffset;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
