@@ -92,7 +92,7 @@ const props = defineProps({
 // - "progress": download progress 0-100 (drives the intro loading line)
 // - "loaded": fired once loading finished (success OR failure), so a parent
 //   (e.g. the intro animation) can stop waiting on the 3DGS asset.
-const emit = defineEmits(["loaded", "progress"]);
+const emit = defineEmits(["loaded", "progress", "error"]);
 
 // ---- State --------------------------------------------------------
 const container = ref(null);
@@ -162,85 +162,95 @@ const onVisibilityChange = () => {
   }
 };
 
+const fail = (err) => {
+  console.error("[GaussianSplatBackground] Failed to initialize:", err);
+  status.value = "error";
+  emit("error");
+  emit("loaded");
+};
+
 // ---- Init ---------------------------------------------------------
 const init = async () => {
-  THREE = await import("three");
-  SPARK = await import("@sparkjsdev/spark");
-
-  basePos = new THREE.Vector3().fromArray(props.cameraPosition);
-  lookTarget = new THREE.Vector3().fromArray(props.cameraLookAt);
-
-  const w = window.innerWidth;
-  const h = window.innerHeight;
-
-  // Determine pixel ratio limit based on quality prop
-  const maxPixelRatio = props.quality === "high" ? 2 : props.quality === "low" ? 1 : 1.5;
-
-  // Standard THREE.js Setup
-  renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
-  renderer.setClearColor(0x000000, 0);
-  renderer.setSize(w, h);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
-  // Enable tone mapping for PBR glass material
-  renderer.toneMapping = THREE.ACESFilmicToneMapping;
-  renderer.toneMappingExposure = 1.0;
-  container.value.appendChild(renderer.domElement);
-
-  camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 500); // Changed FOV from 60 to 50 for a 1.2x zoom
-  camera.position.fromArray(props.cameraPosition);
-  camera.lookAt(new THREE.Vector3().fromArray(props.cameraLookAt));
-
-  scene = new THREE.Scene();
-
-  // Offscreen render target for screen-space refraction (half-res, see REFRACTION_SCALE)
-  renderTarget = new THREE.WebGLRenderTarget(
-    Math.round(w * REFRACTION_SCALE),
-    Math.round(h * REFRACTION_SCALE),
-    {
-      format: THREE.RGBAFormat,
-      type: THREE.UnsignedByteType,
-    },
-  );
-
-  // Add subtle ambient + directional lighting for glass highlights
-  const ambientLight = new THREE.AmbientLight(0x7db87d, 0.3);
-  scene.add(ambientLight);
-  const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
-  dirLight.position.set(2, 3, 1);
-  scene.add(dirLight);
-
-  // Generate glowing circle texture for holographic points
-  const createCircleTexture = () => {
-    const size = 64;
-    const canvas = document.createElement("canvas");
-    canvas.width = size;
-    canvas.height = size;
-    const context = canvas.getContext("2d");
-    const center = size / 2;
-
-    const gradient = context.createRadialGradient(center, center, 0, center, center, center);
-    gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
-    gradient.addColorStop(0.4, "rgba(255, 255, 255, 0.8)");
-    gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
-
-    context.fillStyle = gradient;
-    context.fillRect(0, 0, size, size);
-
-    return new THREE.CanvasTexture(canvas);
-  };
-
-  window.addEventListener("resize", onResize);
-  window.addEventListener("mousemove", onMouseMove);
-  document.addEventListener("visibilitychange", onVisibilityChange);
-
-  // Create glass shards scattered in the scene
-  createGlassShards();
-
-  // Start the render loop immediately
-  animate();
-
-  // Load the 3DGS model using SPARK
   try {
+    THREE = await import("three");
+    SPARK = await import("@sparkjsdev/spark");
+
+    basePos = new THREE.Vector3().fromArray(props.cameraPosition);
+    lookTarget = new THREE.Vector3().fromArray(props.cameraLookAt);
+
+    const w = window.innerWidth;
+    const h = window.innerHeight;
+
+    // Determine pixel ratio limit based on quality prop
+    const maxPixelRatio = props.quality === "high" ? 2 : props.quality === "low" ? 1 : 1.5;
+
+    // Standard THREE.js Setup
+    renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
+    if (!renderer.getContext()) {
+      throw new Error("WebGL is not available");
+    }
+    renderer.setClearColor(0x000000, 0);
+    renderer.setSize(w, h);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
+    // Enable tone mapping for PBR glass material
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.0;
+    container.value.appendChild(renderer.domElement);
+
+    camera = new THREE.PerspectiveCamera(40, w / h, 0.1, 500); // Changed FOV from 60 to 50 for a 1.2x zoom
+    camera.position.fromArray(props.cameraPosition);
+    camera.lookAt(new THREE.Vector3().fromArray(props.cameraLookAt));
+
+    scene = new THREE.Scene();
+
+    // Offscreen render target for screen-space refraction (half-res, see REFRACTION_SCALE)
+    renderTarget = new THREE.WebGLRenderTarget(
+      Math.round(w * REFRACTION_SCALE),
+      Math.round(h * REFRACTION_SCALE),
+      {
+        format: THREE.RGBAFormat,
+        type: THREE.UnsignedByteType,
+      },
+    );
+
+    // Add subtle ambient + directional lighting for glass highlights
+    const ambientLight = new THREE.AmbientLight(0x7db87d, 0.3);
+    scene.add(ambientLight);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
+    dirLight.position.set(2, 3, 1);
+    scene.add(dirLight);
+
+    // Generate glowing circle texture for holographic points
+    const createCircleTexture = () => {
+      const size = 64;
+      const canvas = document.createElement("canvas");
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext("2d");
+      const center = size / 2;
+
+      const gradient = context.createRadialGradient(center, center, 0, center, center, center);
+      gradient.addColorStop(0, "rgba(255, 255, 255, 1)");
+      gradient.addColorStop(0.4, "rgba(255, 255, 255, 0.8)");
+      gradient.addColorStop(1, "rgba(0, 0, 0, 0)");
+
+      context.fillStyle = gradient;
+      context.fillRect(0, 0, size, size);
+
+      return new THREE.CanvasTexture(canvas);
+    };
+
+    window.addEventListener("resize", onResize);
+    window.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("visibilitychange", onVisibilityChange);
+
+    // Create glass shards scattered in the scene
+    createGlassShards();
+
+    // Start the render loop immediately
+    animate();
+
+    // Load the 3DGS model using SPARK
     const loader = new SPARK.SplatLoader();
 
     await new Promise((resolve, reject) => {
@@ -445,10 +455,7 @@ const init = async () => {
     status.value = "ready";
     emit("loaded");
   } catch (err) {
-    console.error("[GaussianSplatBackground] Failed to load splat via SPARK:", err);
-    status.value = "error";
-    // Notify even on failure so the intro doesn't wait forever
-    emit("loaded");
+    fail(err);
   }
 };
 

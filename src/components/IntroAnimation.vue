@@ -34,6 +34,7 @@
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount } from "vue";
+import { isIntroProgressDone, isIntroStalled } from "../utils/introAnimationLogic.js";
 
 const props = defineProps({
   // 背景アセット (3DGS) のロード完了フラグ。true で線を 100% まで引き切る
@@ -130,18 +131,25 @@ const tick = () => {
   }
 
   // 「最低表示時間が経過」かつ「ロード完了」かつ「線をほぼ引き切った」で閉じる
-  const progressDone = prefersReducedMotion.value
-    ? props.ready
-    : minElapsed && props.ready && displayProgress.value > 99.5;
+  const progressDone = isIntroProgressDone({
+    ready: props.ready,
+    minElapsed,
+    displayProgress: displayProgress.value,
+    prefersReducedMotion: prefersReducedMotion.value,
+  });
   if (progressDone) {
     displayProgress.value = 100;
     hide();
     return;
   }
-  // 安全弁: 線を引き切る前 (99%未満) に進捗が stallTimeout の間まったく
-  // 動かなくなった = ロードがフリーズした、とみなして閉じる。
-  // 正常にロードが進んでいる限りここは発火せず、何秒でも待ち続ける。
-  if (displayProgress.value < 99 && performance.now() - lastProgressAt > props.stallTimeout) {
+  if (
+    isIntroStalled({
+      displayProgress: displayProgress.value,
+      lastProgressAt,
+      stallTimeout: props.stallTimeout,
+      now: performance.now(),
+    })
+  ) {
     hide();
     return;
   }

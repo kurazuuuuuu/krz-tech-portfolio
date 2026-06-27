@@ -161,6 +161,7 @@ export default {
   },
   data() {
     return {
+      scrollObserver: null,
       profile: {
         name: "くらず / Kurazu",
         description: "Backend & Infrastructure Engineer",
@@ -245,6 +246,9 @@ export default {
     });
     this.updateProjectDescriptions();
   },
+  beforeUnmount() {
+    this.scrollObserver?.disconnect();
+  },
   methods: {
     async fetchGitHubDescription(githubUrl) {
       try {
@@ -275,7 +279,8 @@ export default {
       }
     },
     setupScrollAnimations() {
-      const observer = new IntersectionObserver(
+      this.scrollObserver?.disconnect();
+      this.scrollObserver = new IntersectionObserver(
         (entries) => {
           entries.forEach((entry) => {
             if (entry.isIntersecting) {
@@ -287,7 +292,7 @@ export default {
       );
 
       document.querySelectorAll(".animate-on-scroll").forEach((el) => {
-        observer.observe(el);
+        this.scrollObserver.observe(el);
       });
     },
     scrollTo(elementId) {
