@@ -2,24 +2,23 @@
   <main>
     <!-- Hero Section -->
     <section id="about" class="hero">
-      <div class="hero-content animate-on-scroll">
-        <div class="hero-avatar">
+      <div class="hero-content">
+        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-avatar">
           <img src="/img/icon.webp" alt="Profile" class="avatar" loading="lazy" />
         </div>
-        <h1 class="hero-title">{{ profile.name }}</h1>
-        <p class="hero-subtitle">{{ profile.description }}</p>
-        <div class="hero-skills">
-          <span
-            v-for="(skill, index) in profile.skills"
-            :key="skill.name"
-            class="skill-tag"
-            :style="{ animationDelay: 1.5 + index * 0.1 + 's' }"
-          >
+        <h1 v-motion :initial="heroInitial" :enter="heroEnter" class="hero-title">
+          {{ profile.name }}
+        </h1>
+        <p v-motion :initial="heroInitial" :enter="heroEnter" class="hero-subtitle">
+          {{ profile.description }}
+        </p>
+        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-skills">
+          <span v-for="skill in profile.skills" :key="skill.name" class="skill-tag">
             <component :is="skill.icon" size="18" />
             {{ skill.name }}
           </span>
         </div>
-        <div class="hero-actions">
+        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-actions">
           <a @click="scrollTo('projects')" class="btn btn-primary">View Projects</a>
         </div>
       </div>
@@ -28,7 +27,7 @@
     <!-- Introduction Section-->
     <section id="introduction" class="introduction">
       <div class="container">
-        <div class="terminal-window animate-on-scroll">
+        <div v-motion="terminalMotion" class="terminal-window">
           <div class="terminal-header">
             <div class="terminal-buttons">
               <span class="terminal-button red"></span>
@@ -47,18 +46,19 @@
     <!-- Projects Section -->
     <section id="projects" class="projects">
       <div class="container">
-        <h2 class="section-title animate-on-scroll">
+        <h2 v-motion="projectsTitleMotion" class="section-title">
           <DancingText text="Projects" />
         </h2>
-        <div v-if="projects.length === 0" class="no-projects animate-on-scroll">
+        <div v-if="projects.length === 0" v-motion="noProjectsMotion" class="no-projects">
           <h3>Coming Soon(´・ω・｀)</h3>
           <p>返事がない...</p>
         </div>
         <div v-else class="projects-grid">
           <div
-            v-for="project in projects"
+            v-for="(project, index) in projects"
             :key="project.id"
-            class="project-card animate-on-scroll"
+            v-motion="projectMotion(index)"
+            class="project-card"
             ref="projectCards"
           >
             <div class="project-images">
@@ -84,6 +84,7 @@
                   :href="project.deploy_url"
                   class="project-link"
                   target="_blank"
+                  rel="noopener noreferrer"
                   ><HomeIcon
                 /></a>
                 <a
@@ -91,6 +92,7 @@
                   :href="project.github_url"
                   class="project-link"
                   target="_blank"
+                  rel="noopener noreferrer"
                   ><BrandGithubIcon
                 /></a>
               </div>
@@ -103,10 +105,10 @@
     <!-- Contact Section -->
     <section id="contact" class="contact">
       <div class="container">
-        <h2 class="section-title animate-on-scroll">
+        <h2 v-motion="contactTitleMotion" class="section-title">
           <DancingText text="Let's Connect" />
         </h2>
-        <div class="contact-content animate-on-scroll">
+        <div v-motion="contactContentMotion" class="contact-content">
           <p class="contact-text">
             どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！
           </p>
@@ -121,6 +123,7 @@
               :href="link.url"
               class="social-link"
               target="_blank"
+              rel="noopener noreferrer"
             >
               <component :is="link.icon" :size="20" />
               {{ link.name }}
@@ -142,6 +145,8 @@ import {
   MailIcon,
 } from "vue-tabler-icons";
 import { convertWithTechIcons } from "../utils/techIcons";
+import { scrollToSection } from "../utils/scrollToSection.js";
+import { heroInitial, heroEnterMotion, scrollRevealMotion } from "../utils/motionPresets.js";
 import DancingText from "./DancingText.vue";
 
 export default {
@@ -157,13 +162,21 @@ export default {
   },
   data() {
     return {
+      heroInitial,
+      heroEnter: heroEnterMotion(0),
+      terminalMotion: scrollRevealMotion(0),
+      projectsTitleMotion: scrollRevealMotion(0),
+      noProjectsMotion: scrollRevealMotion(80),
+      contactTitleMotion: scrollRevealMotion(0),
+      contactContentMotion: scrollRevealMotion(80),
+      projectMotionCache: {},
       profile: {
-        name: "くらず / kurazu",
-        description: "Backend & Infrastructure Enginner",
+        name: "くらず / Kurazu",
+        description: "Backend & Infrastructure Engineer",
         skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
       },
       introduction: [
-        "こんにちは、「くらず / kurazu」 と申します。",
+        "こんにちは、「くらず / Kurazu」 と申します。",
         "",
         "- 福岡県にある 情報系専門学校 の29卒学生",
         "- 2026年4月より 「Iwaken Lab.」 にメンバー加入",
@@ -235,10 +248,6 @@ export default {
     };
   },
   mounted() {
-    this.setupScrollAnimations();
-    this.$nextTick(() => {
-      // this.setupTiltEffect() // Removed per user request
-    });
     this.updateProjectDescriptions();
   },
   methods: {
@@ -270,30 +279,14 @@ export default {
         }
       }
     },
-    setupScrollAnimations() {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add("animate-in");
-            }
-          });
-        },
-        { threshold: 0.1 },
-      );
-
-      document.querySelectorAll(".animate-on-scroll").forEach((el) => {
-        observer.observe(el);
-      });
+    projectMotion(index) {
+      if (!this.projectMotionCache[index]) {
+        this.projectMotionCache[index] = scrollRevealMotion(index * 90);
+      }
+      return this.projectMotionCache[index];
     },
     scrollTo(elementId) {
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.scrollIntoView({
-          behavior: "smooth",
-          block: "start",
-        });
-      }
+      scrollToSection(elementId);
     },
   },
 };
@@ -304,29 +297,6 @@ export default {
   max-width: 1200px;
   margin: 0 auto;
   padding: 0 2rem;
-}
-
-/* Animations */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(30px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-on-scroll {
-  opacity: 0;
-  transform: translateY(30px);
-  transition: all 0.6s ease;
-}
-
-.animate-on-scroll.animate-in {
-  opacity: 1;
-  transform: translateY(0);
 }
 
 /* Hero Section */
@@ -406,8 +376,6 @@ export default {
   gap: 0.5rem;
   transition: all 0.3s ease;
   box-shadow: 2px 2px 0 #6ba86b;
-  animation: fadeInUp 0.6s ease forwards;
-  opacity: 0;
 }
 
 .skill-tag:hover {

@@ -5,6 +5,8 @@
 <script setup>
 import { ref, onMounted, onBeforeUnmount } from "vue";
 
+const emit = defineEmits(["loaded", "progress"]);
+
 const container = ref(null);
 let renderer, scene, camera, points, animationId;
 let THREE = null;
@@ -155,52 +157,66 @@ const rasterizeImage = (img, maxDim = 512) => {
 
 // ---- Init ----
 const init = async () => {
-  THREE = await import("three");
-
-  // Scene background: deep dark so additive splats pop
-  scene = new THREE.Scene();
-  scene.background = new THREE.Color(0x050810);
-
-  camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 800);
-  camera.position.set(0, 0, 110);
-  camera.lookAt(0, 0, 0);
-
-  renderer = new THREE.WebGLRenderer({ antialias: true });
-  renderer.setSize(window.innerWidth, window.innerHeight);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-
-  if (container.value) {
-    container.value.appendChild(renderer.domElement);
-  }
-
-  // Build point cloud from background image
   try {
-    const img = await loadImage("/img/vrc_background.webp");
-    const { data, width, height } = rasterizeImage(img, 512);
-    const geo = buildGeometry(data, width, height);
-    const tex = createGaussianTexture();
+    THREE = await import("three");
 
-    const mat = new THREE.ShaderMaterial({
-      uniforms: {
-        uTex: { value: tex },
-        uBrightness: { value: 2.8 }, // boost colour intensity
-      },
-      vertexShader,
-      fragmentShader,
-      transparent: true,
-      depthWrite: false,
-      blending: THREE.AdditiveBlending, // overlapping splats accumulate brightness
-    });
+    // Scene background: deep dark so additive splats pop
+    scene = new THREE.Scene();
+    scene.background = new THREE.Color(0x050810);
 
-    points = new THREE.Points(geo, mat);
-    scene.add(points);
+    camera = new THREE.PerspectiveCamera(58, window.innerWidth / window.innerHeight, 0.1, 800);
+    camera.position.set(0, 0, 110);
+    camera.lookAt(0, 0, 0);
+
+    renderer = new THREE.WebGLRenderer({ antialias: true });
+    if (!renderer.getContext()) {
+      throw new Error("WebGL is not available");
+    }
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+
+    if (container.value) {
+      container.value.appendChild(renderer.domElement);
+    }
+
+    // Build point cloud from background image
+    try {
+      emit("progress", 10);
+      const img = await loadImage("/img/vrc_background.webp");
+      emit("progress", 60);
+      const { data, width, height } = rasterizeImage(img, 512);
+      const geo = buildGeometry(data, width, height);
+      const tex = createGaussianTexture();
+
+      const mat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTex: { value: tex },
+          uBrightness: { value: 2.8 }, // boost colour intensity
+        },
+        vertexShader,
+        fragmentShader,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.AdditiveBlending, // overlapping splats accumulate brightness
+      });
+
+      points = new THREE.Points(geo, mat);
+      scene.add(points);
+      emit("progress", 100);
+    } catch (err) {
+      console.warn("[ThreeBackground] Image load failed, rendering without point cloud:", err);
+      emit("progress", 100);
+    }
+
+    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("resize", onResize);
+    animate();
+    emit("loaded");
   } catch (err) {
-    console.warn("[ThreeBackground] Image load failed, rendering without point cloud:", err);
+    console.warn("[ThreeBackground] Failed to initialize:", err);
+    emit("progress", 100);
+    emit("loaded");
   }
-
-  window.addEventListener("mousemove", onMouseMove);
-  window.addEventListener("resize", onResize);
-  animate();
 };
 
 // ---- Render loop ----

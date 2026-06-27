@@ -2,23 +2,24 @@
   <div id="app">
     <div class="progress-bar" :style="{ width: scrollProgress + '%' }"></div>
 
-    <!-- 3DGS スプラット背景 (public/background.splat を配置) -->
     <GaussianSplatBackground
+      v-if="!useFallbackBackground"
       splat-path="/background.splat"
-      quality="high"
+      :quality="backgroundQuality"
       :point-size="0.02"
       :camera-position="[0, 0.3, -0.5]"
       :camera-look-at="[0, 0.09, -1]"
       :scene-rotation="[1, 0, 0, 0.3]"
       :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
+      @loaded="onBackgroundLoaded"
+      @progress="onBackgroundProgress"
+      @error="onBackgroundError"
     />
 
-    <!-- 画像ポイントクラウド版 (フォールバック用) -->
-    <!-- <ThreeBackground /> -->
+    <ThreeBackground v-else @loaded="onBackgroundLoaded" @progress="onBackgroundProgress" />
 
-    <IntroAnimation />
-    <Header />
+    <IntroAnimation :ready="backgroundLoaded" :progress="backgroundProgress" />
     <Main />
     <Footer />
   </div>
@@ -27,54 +28,54 @@
 <script>
 import { defineAsyncComponent } from "vue";
 import IntroAnimation from "./components/IntroAnimation.vue";
-import Header from "./components/Header.vue";
 import Main from "./components/Main.vue";
 import Footer from "./components/Footer.vue";
+import { resolveBackgroundQuality } from "./utils/backgroundQuality.js";
 
 const GaussianSplatBackground = defineAsyncComponent(
   () => import("./components/GaussianSplatBackground.vue"),
 );
 
-// 画像ポイントクラウド版 (フォールバック用)
-// const ThreeBackground = defineAsyncComponent(() =>
-//   import('./components/ThreeBackground.vue')
-// )
+const ThreeBackground = defineAsyncComponent(() => import("./components/ThreeBackground.vue"));
 
 export default {
   name: "App",
   components: {
     GaussianSplatBackground,
-    // ThreeBackground,
+    ThreeBackground,
     IntroAnimation,
-    Header,
     Main,
     Footer,
   },
   data() {
     return {
       scrollProgress: 0,
-      lastScrollY: 0,
-      scrollProgress: 0,
-      lastScrollY: 0,
+      backgroundLoaded: false,
+      backgroundProgress: 0,
+      backgroundQuality: resolveBackgroundQuality(),
+      useFallbackBackground: false,
     };
   },
   mounted() {
-    window.addEventListener("scroll", this.updateScrollProgress);
     window.addEventListener("scroll", this.updateScrollProgress);
   },
   beforeUnmount() {
     window.removeEventListener("scroll", this.updateScrollProgress);
   },
   methods: {
+    onBackgroundLoaded() {
+      this.backgroundLoaded = true;
+    },
+    onBackgroundProgress(progress) {
+      this.backgroundProgress = progress;
+    },
+    onBackgroundError() {
+      this.useFallbackBackground = true;
+    },
     updateScrollProgress() {
       const scrollTop = window.pageYOffset;
       const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      this.scrollProgress = (scrollTop / docHeight) * 100;
-
-      const scrollDelta = scrollTop - this.lastScrollY;
-      this.lastScrollY = scrollTop;
-
-      this.lastScrollY = scrollTop;
+      this.scrollProgress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
     },
   },
 };

@@ -2,24 +2,40 @@
   <footer class="footer">
     <div class="container">
       <div class="footer-content">
-        <p>&copy; 2025 kurazu. Build with Vue.js</p>
+        <p>&copy; {{ year }} くらず / Kurazu. Built with Vue.js</p>
+        <div class="footer-links">
+          <a
+            href="https://github.com/kurazuuuuuu/"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="GitHub"
+          >
+            <BrandGithubIcon :size="20" />
+          </a>
+        </div>
       </div>
     </div>
   </footer>
 </template>
 
+<script setup>
+import { BrandGithubIcon } from "vue-tabler-icons";
+
+const year = new Date().getFullYear();
+</script>
+
 <style scoped>
 .footer {
   background: rgba(168, 230, 163, 0.9);
-  border-top: 3px solid #7db87d;
-  padding: 2rem 0;
-  box-shadow: 0 -2px 0 #6ba86b;
+  border-top: 2px solid #7db87d;
+  padding: 1rem 0;
+  box-shadow: 0 -1px 0 #6ba86b;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 2rem;
+  padding: 0 1.5rem;
 }
 
 .footer-content {
@@ -27,6 +43,9 @@
   justify-content: space-between;
   align-items: center;
   color: #2d5a2d;
+  font-size: 0.875rem;
+  line-height: 1.4;
+  min-height: 44px;
 }
 
 .footer-links {
@@ -38,8 +57,12 @@
   color: #4a7a4a;
   text-decoration: none;
   transition: all 0.3s ease;
-  padding: 0.25rem 0.5rem;
   border: 2px solid transparent;
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .footer-links a:hover {
@@ -49,9 +72,17 @@
 }
 
 @media (max-width: 768px) {
+  .footer {
+    padding: 0.75rem 0;
+  }
+
+  .container {
+    padding: 0 1rem;
+  }
+
   .footer-content {
     flex-direction: column;
-    gap: 1rem;
+    gap: 0.5rem;
     text-align: center;
   }
 
