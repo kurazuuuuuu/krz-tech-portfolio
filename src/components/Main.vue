@@ -1,25 +1,25 @@
 <template>
-  <main>
+  <main ref="root">
     <!-- Hero Section -->
     <section id="about" class="hero">
       <div class="hero-content">
-        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-avatar">
+        <div data-hero class="hero-avatar">
           <img src="/img/icon.webp" alt="Profile" class="avatar" loading="lazy" />
         </div>
-        <h1 v-motion :initial="heroInitial" :enter="heroEnter" class="hero-title">
+        <h1 data-hero class="hero-title">
           {{ profile.name }}
         </h1>
-        <p v-motion :initial="heroInitial" :enter="heroEnter" class="hero-subtitle">
+        <p data-hero class="hero-subtitle">
           {{ profile.description }}
         </p>
-        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-skills">
+        <div data-hero class="hero-skills">
           <span v-for="skill in profile.skills" :key="skill.name" class="skill-tag">
             <component :is="skill.icon" size="18" />
             {{ skill.name }}
           </span>
         </div>
-        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-actions">
-          <a @click="scrollTo('projects')" class="btn btn-primary">View Projects</a>
+        <div data-hero class="hero-actions">
+          <a @click="scrollToSection('projects')" class="btn btn-primary">View Projects</a>
         </div>
       </div>
     </section>
@@ -27,7 +27,7 @@
     <!-- Introduction Section-->
     <section id="introduction" class="introduction">
       <div class="container">
-        <div v-motion="terminalMotion" class="terminal-window">
+        <div data-reveal class="terminal-window">
           <div class="terminal-header">
             <div class="terminal-buttons">
               <span class="terminal-button red"></span>
@@ -46,20 +46,19 @@
     <!-- Projects Section -->
     <section id="projects" class="projects">
       <div class="container">
-        <h2 v-motion="projectsTitleMotion" class="section-title">
+        <h2 data-reveal class="section-title">
           <DancingText text="Projects" />
         </h2>
-        <div v-if="projects.length === 0" v-motion="noProjectsMotion" class="no-projects">
+        <div v-if="projects.length === 0" data-reveal class="no-projects">
           <h3>Coming Soon(´・ω・｀)</h3>
           <p>返事がない...</p>
         </div>
         <div v-else class="projects-grid">
           <div
-            v-for="(project, index) in projects"
+            v-for="project in projects"
             :key="project.id"
-            v-motion="projectMotion(index)"
+            data-reveal="projects"
             class="project-card"
-            ref="projectCards"
           >
             <div class="project-images">
               <img
@@ -85,7 +84,7 @@
                   class="project-link"
                   target="_blank"
                   rel="noopener noreferrer"
-                  ><HomeIcon
+                  ><IconHome
                 /></a>
                 <a
                   v-if="project.github_url"
@@ -93,7 +92,7 @@
                   class="project-link"
                   target="_blank"
                   rel="noopener noreferrer"
-                  ><BrandGithubIcon
+                  ><IconBrandGithub
                 /></a>
               </div>
             </div>
@@ -105,15 +104,15 @@
     <!-- Contact Section -->
     <section id="contact" class="contact">
       <div class="container">
-        <h2 v-motion="contactTitleMotion" class="section-title">
+        <h2 data-reveal="contact" class="section-title">
           <DancingText text="Let's Connect" />
         </h2>
-        <div v-motion="contactContentMotion" class="contact-content">
+        <div data-reveal="contact" class="contact-content">
           <p class="contact-text">
             どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！
           </p>
           <a href="mailto:contact@krz-tech.net" class="contact-email">
-            <MailIcon :size="24" />
+            <IconMail :size="24" />
             contact@krz-tech.net
           </a>
           <div class="social-links">
@@ -135,161 +134,179 @@
   </main>
 </template>
 
-<script>
-import {
-  HomeIcon,
-  BrandTwitterIcon,
-  BrandGithubIcon,
-  BrandDiscordIcon,
-  BookIcon,
-  MailIcon,
-} from "vue-tabler-icons";
+<script setup>
+import { nextTick, onMounted, reactive, ref, watch } from "vue";
+import { IconBook, IconBrandGithub, IconBrandX, IconHome, IconMail } from "@tabler/icons-vue";
 import { convertWithTechIcons } from "../utils/techIcons";
 import { scrollToSection } from "../utils/scrollToSection.js";
-import { heroInitial, heroEnterMotion, scrollRevealMotion } from "../utils/motionPresets.js";
+import { gsap, useGsap, useScrollReveal } from "../composables/useGsap.js";
 import DancingText from "./DancingText.vue";
 
-export default {
-  name: "Main",
-  components: {
-    HomeIcon,
-    BrandTwitterIcon,
-    BrandGithubIcon,
-    BrandDiscordIcon,
-    BookIcon,
-    MailIcon,
-    DancingText,
+const props = defineProps({
+  // イントロ (IntroAnimation) が閉じ始めたか。ヒーローの登場はこれを合図に始める
+  introDone: {
+    type: Boolean,
+    default: false,
   },
-  data() {
-    return {
-      heroInitial,
-      heroEnter: heroEnterMotion(0),
-      terminalMotion: scrollRevealMotion(0),
-      projectsTitleMotion: scrollRevealMotion(0),
-      noProjectsMotion: scrollRevealMotion(80),
-      contactTitleMotion: scrollRevealMotion(0),
-      contactContentMotion: scrollRevealMotion(80),
-      projectMotionCache: {},
-      profile: {
-        name: "くらず / Kurazu",
-        description: "Backend & Infrastructure Engineer",
-        skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
-      },
-      introduction: [
-        "こんにちは、「くらず / Kurazu」 と申します。",
-        "",
-        "- 福岡県にある 情報系専門学校 の29卒学生",
-        "- 2026年4月より 「Iwaken Lab.」 にメンバー加入",
-        "",
-        "> 技術領域",
-        "- バックエンド (Python)",
-        "- インフラ (オンプレ、クラウド(AWS, GCP))",
-        "   - Cloudflare",
-        "   - Docker, Kubernetes",
-        "   - ProxmoxVE, BS (VM/CT)",
-        "",
-        "> メインじゃないけどよく使う技術",
-        "- AI / ML (エージェント・LLM・Diffusion)",
-        "- VR / XR (VRChat, WebXR)",
-        "",
-        "> コメント",
-        "自宅でサーバーを運用しています。(デスクトップ x 2, ミニPC x 1, L3スイッチ x 1)",
-        "実験・開発環境だったり、なんでも汎用的に使用しているためすごく便利です。なお電気代。",
-        "ハッカソンやイベントに現れる時があると思うので、その時はよろしくお願いします！",
-      ].join("\n"),
-      projects: [
-        {
-          id: "perugraph",
-          name: "ペルグラフ / Perugraph (in Dev)",
-          description: [
-            "VRChat コミュニティのためのフォトアルバムプラットフォーム",
-            "",
-            "Discordサーバーと紐づけ、アルバムを作成し、各サーバーでそのアルバムを運営してもらうことをコンセプトにしています。",
-            "",
-            "「Nitro入ってないけど...8Kとか綺麗な画像を非圧縮で送信したい...」そんな願いを解決します。",
-          ].join("\n"),
-          technologies: ["Kubernetes", "Cloudflare", "Discord.py", "Vue.js"].map(
-            convertWithTechIcons,
-          ),
-          deploy_url: "https://beta.perugraph.app",
-          github_url: null,
-        },
-        {
-          id: "github-fairy",
-          name: "Fairy",
-          description: [
-            "Discord 上で動作するアプリケーションです。",
-            "生成AIと Web フロントエンドを組み合わせて、日常的に触りやすい体験を目指して開発しています。",
-          ].join("\n"),
-          technologies: ["Discord.py", "Vue.js", "Gemini 2.5 Flash Lite", "MongoDB"].map(
-            convertWithTechIcons,
-          ),
-          deploy_url: "https://fairy.krz-tech.net",
-          github_url: "https://github.com/kurazuuuuuu/fairy",
-        },
-      ],
-      socialLinks: [
-        {
-          name: "Twitter",
-          url: "https://twitter.com/kurazu_vrc",
-          icon: "BrandTwitterIcon",
-        },
-        {
-          name: "GitHub",
-          url: "https://github.com/kurazuuuuuu/",
-          icon: "BrandGithubIcon",
-        },
-        {
-          name: "Zenn",
-          url: "https://zenn.dev/krz_tech",
-          icon: "BookIcon",
-        },
-      ],
-    };
-  },
-  mounted() {
-    this.updateProjectDescriptions();
-  },
-  methods: {
-    async fetchGitHubDescription(githubUrl) {
-      try {
-        const match = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
-        if (!match) return null;
+});
 
-        const owner = match[1];
-        const repo = match[2];
-
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
-        if (!response.ok) throw new Error("GitHub API request failed");
-
-        const data = await response.json();
-        return data.description;
-      } catch (error) {
-        console.warn("Failed to fetch GitHub description:", error);
-        return null;
-      }
-    },
-    async updateProjectDescriptions() {
-      for (const project of this.projects) {
-        if (project.github_url) {
-          const description = await this.fetchGitHubDescription(project.github_url);
-          if (description) {
-            project.description = description;
-          }
-        }
-      }
-    },
-    projectMotion(index) {
-      if (!this.projectMotionCache[index]) {
-        this.projectMotionCache[index] = scrollRevealMotion(index * 90);
-      }
-      return this.projectMotionCache[index];
-    },
-    scrollTo(elementId) {
-      scrollToSection(elementId);
-    },
-  },
+const profile = {
+  name: "くらず / Kurazu",
+  description: "Backend & Infrastructure Engineer",
+  skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
 };
+
+const introduction = [
+  "こんにちは、「くらず / Kurazu」 と申します。",
+  "",
+  "- 福岡県にある 情報系専門学校 の29卒学生",
+  "- 2026年4月より 「Iwaken Lab.」 にメンバー加入",
+  "",
+  "> 技術領域",
+  "- バックエンド (Python)",
+  "- インフラ (オンプレ、クラウド(AWS, GCP))",
+  "   - Cloudflare",
+  "   - Docker, Kubernetes",
+  "   - ProxmoxVE, BS (VM/CT)",
+  "",
+  "> メインじゃないけどよく使う技術",
+  "- AI / ML (エージェント・LLM・Diffusion)",
+  "- VR / XR (VRChat, WebXR)",
+  "",
+  "> コメント",
+  "自宅でサーバーを運用しています。(デスクトップ x 2, ミニPC x 1, L3スイッチ x 1)",
+  "実験・開発環境だったり、なんでも汎用的に使用しているためすごく便利です。なお電気代。",
+  "ハッカソンやイベントに現れる時があると思うので、その時はよろしくお願いします！",
+].join("\n");
+
+// GitHub API で description を上書きするので reactive
+const projects = reactive([
+  {
+    id: "perugraph",
+    name: "ペルグラフ / Perugraph (in Dev)",
+    description: [
+      "VRChat コミュニティのためのフォトアルバムプラットフォーム",
+      "",
+      "Discordサーバーと紐づけ、アルバムを作成し、各サーバーでそのアルバムを運営してもらうことをコンセプトにしています。",
+      "",
+      "「Nitro入ってないけど...8Kとか綺麗な画像を非圧縮で送信したい...」そんな願いを解決します。",
+    ].join("\n"),
+    technologies: ["Kubernetes", "Cloudflare", "Discord.py", "Vue.js"].map(convertWithTechIcons),
+    deploy_url: "https://beta.perugraph.app",
+    github_url: null,
+  },
+  {
+    id: "github-fairy",
+    name: "Fairy",
+    description: [
+      "Discord 上で動作するアプリケーションです。",
+      "生成AIと Web フロントエンドを組み合わせて、日常的に触りやすい体験を目指して開発しています。",
+    ].join("\n"),
+    technologies: ["Discord.py", "Vue.js", "Gemini 2.5 Flash Lite", "MongoDB"].map(
+      convertWithTechIcons,
+    ),
+    deploy_url: "https://fairy.krz-tech.net",
+    github_url: "https://github.com/kurazuuuuuu/fairy",
+  },
+]);
+
+const socialLinks = [
+  {
+    name: "X",
+    url: "https://twitter.com/kurazu_vrc",
+    icon: IconBrandX,
+  },
+  {
+    name: "GitHub",
+    url: "https://github.com/kurazuuuuuu/",
+    icon: IconBrandGithub,
+  },
+  {
+    name: "Zenn",
+    url: "https://zenn.dev/krz_tech",
+    icon: IconBook,
+  },
+];
+
+async function fetchGitHubDescription(githubUrl) {
+  try {
+    const match = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+    if (!match) return null;
+
+    const owner = match[1];
+    const repo = match[2];
+
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+    if (!response.ok) throw new Error("GitHub API request failed");
+
+    const data = await response.json();
+    return data.description;
+  } catch (error) {
+    console.warn("Failed to fetch GitHub description:", error);
+    return null;
+  }
+}
+
+async function updateProjectDescriptions() {
+  for (const project of projects) {
+    if (project.github_url) {
+      const description = await fetchGitHubDescription(project.github_url);
+      if (description) {
+        project.description = description;
+      }
+    }
+  }
+}
+
+const root = ref(null);
+
+// 各セクションのスクロールリビール ([data-reveal])。
+// イントロのオーバーレイが開いている間は隠したまま待たせて、裏でリビールが終わるのを防ぐ
+const { refresh: refreshReveal } = useScrollReveal(root, {
+  enabled: () => props.introDone,
+});
+
+onMounted(async () => {
+  await updateProjectDescriptions();
+  // description が伸びるとカードの高さが変わり、下のトリガ位置がずれる
+  await nextTick();
+  refreshReveal();
+});
+
+// ヒーローの登場。マウント時点では隠しておき、イントロが閉じ始めてから再生する
+const { add } = useGsap(root);
+let heroTimeline = null;
+
+add(({ reduceMotion }) => {
+  // reduced-motion では何も隠さない。要素は最初から最終状態のまま
+  if (reduceMotion) return undefined;
+
+  const items = gsap.utils.toArray("[data-hero]", root.value);
+  if (!items.length) return undefined;
+
+  gsap.set(items, { autoAlpha: 0, y: 36 });
+  heroTimeline = gsap.timeline({ paused: true }).to(items, {
+    autoAlpha: 1,
+    y: 0,
+    duration: 0.7,
+    ease: "power3.out",
+    stagger: 0.08,
+    clearProps: "transform,opacity,visibility",
+  });
+
+  if (props.introDone) heroTimeline.play();
+
+  return () => {
+    heroTimeline = null;
+  };
+});
+
+watch(
+  () => props.introDone,
+  (done) => {
+    if (done) heroTimeline?.play();
+  },
+);
 </script>
 
 <style scoped>
@@ -529,7 +546,11 @@ export default {
   padding: 2rem;
   border: 2px solid rgb(var(--color-primary-rgb) / 0.4);
   border-radius: 8px;
-  transition: all 0.1s ease;
+  /* GSAP が毎フレーム書く opacity / transform に干渉しないよう、hover で変える色だけに絞る */
+  transition:
+    box-shadow 0.1s ease,
+    background 0.1s ease,
+    border-color 0.1s ease;
 }
 
 .project-card:hover {

@@ -25,7 +25,7 @@
       :progress="backgroundProgress"
       @done="introDone = true"
     />
-    <Main />
+    <Main :intro-done="introDone" />
     <Footer />
   </div>
 </template>

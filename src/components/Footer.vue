@@ -10,7 +10,7 @@
             rel="noopener noreferrer"
             aria-label="GitHub"
           >
-            <BrandGithubIcon :size="20" />
+            <IconBrandGithub :size="20" />
           </a>
         </div>
       </div>
@@ -19,7 +19,7 @@
 </template>
 
 <script setup>
-import { BrandGithubIcon } from "vue-tabler-icons";
+import { IconBrandGithub } from "@tabler/icons-vue";
 
 const year = new Date().getFullYear();
 </script>
