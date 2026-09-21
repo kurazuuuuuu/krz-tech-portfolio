@@ -132,6 +132,27 @@ let glassUniforms = null; // Shared uniforms for glass shader
 // buffer cuts Pass-1 fill rate to ~1/4 with no visible quality loss.
 const REFRACTION_SCALE = 0.5;
 
+// ---- GPU load control ---------------------------------------------
+// 描画ピクセル数の予算。加算ブレンドの点群は塗り面積 (= 解像度) に比例して重くなるため、
+// 4K などの高解像度モニターでは pixelRatio を下げてこの範囲に収める (約 1080p x 1.4 相当)。
+// 発光する点はもともとソフトなので、解像度を多少落としても見た目の劣化は小さい。
+const MAX_RENDER_PIXELS = 4_000_000;
+// リビール完了後の背景のゆらぎは 30fps で十分
+const ACTIVE_FPS = 60;
+const IDLE_FPS = 30;
+
+const resolvePixelRatio = (w, h) => {
+  const maxPixelRatio = props.quality === "high" ? 2 : props.quality === "low" ? 1 : 1.5;
+  const budgetRatio = Math.sqrt(MAX_RENDER_PIXELS / Math.max(w * h, 1));
+  return Math.min(window.devicePixelRatio, maxPixelRatio, budgetRatio);
+};
+
+// gl_FragCoord は描画バッファの実ピクセル座標なので、0-1 の UV にするには実サイズで割る
+const updateGlassResolution = () => {
+  if (!glassUniforms || !renderer) return;
+  renderer.getDrawingBufferSize(glassUniforms.resolution.value);
+};
+
 // ---- Point cloud reveal (手前→奥へ波面が走る) ----------------------
 const REVEAL_DURATION_MS = 2500;
 // イントロの白オーバーレイがフェードアウトする間 (0.4s) は見えないので少し待つ
@@ -174,12 +195,13 @@ const onResize = () => {
   const h = window.innerHeight;
   camera.aspect = w / h;
   camera.updateProjectionMatrix();
+  // Re-evaluate the pixel budget (window may have moved to a different monitor)
+  renderer.setPixelRatio(resolvePixelRatio(w, h));
   renderer.setSize(w, h);
   // Resize offscreen render target too (kept at reduced resolution)
   if (renderTarget)
     renderTarget.setSize(Math.round(w * REFRACTION_SCALE), Math.round(h * REFRACTION_SCALE));
-  // resolution stays full-res: it normalizes gl_FragCoord into 0-1 screen UVs
-  if (glassUniforms) glassUniforms.resolution.value.set(w, h);
+  updateGlassResolution();
 };
 
 const onMouseMove = (e) => {
@@ -221,17 +243,15 @@ const init = async () => {
     const w = window.innerWidth;
     const h = window.innerHeight;
 
-    // Determine pixel ratio limit based on quality prop
-    const maxPixelRatio = props.quality === "high" ? 2 : props.quality === "low" ? 1 : 1.5;
-
     // Standard THREE.js Setup
     renderer = new THREE.WebGLRenderer({ antialias: false, alpha: true });
     if (!renderer.getContext()) {
       throw new Error("WebGL is not available");
     }
     renderer.setClearColor(0x000000, 0);
+    // Pixel ratio is capped by quality AND by an absolute pixel budget (see MAX_RENDER_PIXELS)
+    renderer.setPixelRatio(resolvePixelRatio(w, h));
     renderer.setSize(w, h);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, maxPixelRatio));
     // Enable tone mapping for PBR glass material
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
@@ -537,6 +557,7 @@ const createGlassShards = () => {
     resolution: { value: new THREE.Vector2(window.innerWidth, window.innerHeight) },
     time: { value: 0 },
   };
+  updateGlassResolution();
 
   const glassMaterial = new THREE.ShaderMaterial({
     uniforms: glassUniforms,
@@ -645,7 +666,11 @@ const createGlassShards = () => {
 
 // ---- Render loop --------------------------------------------------
 let lastTime = 0;
-const FRAME_MS = 1000 / 60;
+// 60fps during the reveal, then IDLE_FPS once the scene has settled
+let targetFps = ACTIVE_FPS;
+// rAF intervals jitter around the display's frame time; without a tolerance a 16.6ms frame
+// on a 60Hz display fails a "< 16.67ms" check and gets dropped (uneven ~45fps)
+const FRAME_TOLERANCE_MS = 2;
 
 const updateCameraInfo = () => {
   if (!camera) return;
@@ -662,10 +687,13 @@ const updateCameraInfo = () => {
 
 const animate = (time = 0) => {
   animationId = requestAnimationFrame(animate);
-  if (time - lastTime < FRAME_MS) return;
+  if (time - lastTime < 1000 / targetFps - FRAME_TOLERANCE_MS) return;
   // Clamp so a long pause (hidden tab) doesn't make the reveal jump ahead
   const dt = Math.min(time - lastTime, 100);
   lastTime = time;
+  // Per-frame easing factors were tuned at 60fps; rescale so motion is frame-rate independent
+  const frames = dt / (1000 / 60);
+  const ease = (k) => 1 - Math.pow(1 - k, frames);
 
   // Apply parallax logic if camera is available
   if (camera && basePos && lookTarget) {
@@ -674,16 +702,16 @@ const animate = (time = 0) => {
     const targetY = basePos.y + mouse.y * props.parallaxRange * 0.3;
 
     // Smoothly interpolate current camera position toward target position
-    camera.position.x += (targetX - camera.position.x) * 0.05;
-    camera.position.y += (targetY - camera.position.y) * 0.05;
+    camera.position.x += (targetX - camera.position.x) * ease(0.05);
+    camera.position.y += (targetY - camera.position.y) * ease(0.05);
 
     // Always keep looking at the central target
     camera.lookAt(lookTarget);
   }
 
   // Smooth mouse calculation for shaders so the repulsion isn't jittery
-  smoothMouse.x += (mouse.x - smoothMouse.x) * 0.1;
-  smoothMouse.y += (mouse.y - smoothMouse.y) * 0.1;
+  smoothMouse.x += (mouse.x - smoothMouse.x) * ease(0.1);
+  smoothMouse.y += (mouse.y - smoothMouse.y) * ease(0.1);
 
   // Update custom shader uniforms
   if (splatMesh && splatMesh.userData.uniforms) {
@@ -697,6 +725,8 @@ const animate = (time = 0) => {
       revealElapsed += dt;
       const p = Math.min(Math.max((revealElapsed - REVEAL_DELAY_MS) / REVEAL_DURATION_MS, 0), 1);
       revealFront.value = (1 - (1 - p) * (1 - p)) * (1 + REVEAL_BAND);
+    } else if (props.reveal) {
+      targetFps = IDLE_FPS;
     }
   }
 
@@ -709,9 +739,9 @@ const animate = (time = 0) => {
   const t = time / 1000;
   for (const shard of glassShards) {
     const u = shard.userData;
-    shard.rotation.x += u.rotSpeed.x * 0.016;
-    shard.rotation.y += u.rotSpeed.y * 0.016;
-    shard.rotation.z += u.rotSpeed.z * 0.016;
+    shard.rotation.x += u.rotSpeed.x * (dt / 1000);
+    shard.rotation.y += u.rotSpeed.y * (dt / 1000);
+    shard.rotation.z += u.rotSpeed.z * (dt / 1000);
     shard.position.y = u.baseY + Math.sin(t * u.floatSpeed + u.floatOffset) * u.floatAmplitude;
   }
 
