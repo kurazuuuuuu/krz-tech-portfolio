@@ -65,6 +65,9 @@ const CROWN_HALF = 140; // 王冠の半幅
 const CROWN_RISE = 60; // 王冠の高さ
 const VALLEY = 70; // 谷の水平オフセット
 
+// - "done": イントロを閉じ始めた瞬間に発火 (背景の点群リビール開始の合図)
+const emit = defineEmits(["done"]);
+
 const showAnimation = ref(true);
 const prefersReducedMotion = ref(
   typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches,
@@ -107,6 +110,7 @@ const hide = () => {
   if (hidden) return;
   hidden = true;
   showAnimation.value = false;
+  emit("done");
   if (raf) cancelAnimationFrame(raf);
   clearTimeout(minTimer);
 };
@@ -196,7 +200,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: white;
+  background: var(--color-intro-bg);
   z-index: 9999;
   overflow: hidden;
 }
@@ -211,14 +215,14 @@ onBeforeUnmount(() => {
 
 .line-path {
   fill: none;
-  stroke: #3a6b3a;
+  stroke: var(--color-intro-line);
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .line-tip {
-  fill: #7db87d;
+  fill: var(--color-primary);
 }
 
 /* Vue Transition styles */

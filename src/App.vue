@@ -12,15 +12,20 @@
       :scene-rotation="[1, 0, 0, 0.3]"
       :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
+      :reveal="introDone"
       @loaded="onBackgroundLoaded"
       @progress="onBackgroundProgress"
       @error="onBackgroundError"
     />
 
-    <ThreeBackground v-else @loaded="onBackgroundLoaded" @progress="onBackgroundProgress" />
+    <FallbackBackground v-else @loaded="onBackgroundLoaded" @progress="onBackgroundProgress" />
 
-    <IntroAnimation :ready="backgroundLoaded" :progress="backgroundProgress" />
-    <Main />
+    <IntroAnimation
+      :ready="backgroundLoaded"
+      :progress="backgroundProgress"
+      @done="introDone = true"
+    />
+    <Main :intro-done="introDone" />
     <Footer />
   </div>
 </template>
@@ -28,6 +33,7 @@
 <script>
 import { defineAsyncComponent } from "vue";
 import IntroAnimation from "./components/IntroAnimation.vue";
+import FallbackBackground from "./components/FallbackBackground.vue";
 import Main from "./components/Main.vue";
 import Footer from "./components/Footer.vue";
 import { resolveBackgroundQuality } from "./utils/backgroundQuality.js";
@@ -36,13 +42,11 @@ const GaussianSplatBackground = defineAsyncComponent(
   () => import("./components/GaussianSplatBackground.vue"),
 );
 
-const ThreeBackground = defineAsyncComponent(() => import("./components/ThreeBackground.vue"));
-
 export default {
   name: "App",
   components: {
     GaussianSplatBackground,
-    ThreeBackground,
+    FallbackBackground,
     IntroAnimation,
     Main,
     Footer,
@@ -51,6 +55,7 @@ export default {
     return {
       scrollProgress: 0,
       backgroundLoaded: false,
+      introDone: false,
       backgroundProgress: 0,
       backgroundQuality: resolveBackgroundQuality(),
       useFallbackBackground: false,
@@ -82,10 +87,92 @@ export default {
 </script>
 
 <style>
+/*
+ * デザイントークン。役割ベースで定義してあるので、テーマ変更はここの値だけを差し替える。
+ * アルファ違いで使う色は RGB 三つ組 (--*-rgb) として持ち、使用側でアルファを付けて参照する。
+ */
+:root {
+  /* フォント。英数字は Poppins、日本語グリフは Poppins に無いので Zen Maru Gothic へ落ちる */
+  --font-body: "Poppins", "Zen Maru Gothic", sans-serif;
+  --font-latin: "Poppins", sans-serif;
+  /* Doto はラテン文字のみ。英字の強調にだけ使う */
+  --font-display: "Doto", "Poppins", monospace;
+
+  /* 装飾の傾き。3D 背景のスピード線と揃える共通値 */
+  --deco-angle: -12deg;
+  /* セクション境目の斜めカットの高さ。tan(12deg) = 0.2126 なので 21.26vw で --deco-angle と一致する。
+     〜1505px までは 12° を維持し、それ以上では 320px で頭打ちにして角度が浅くなる
+     (1920px で約 9.5°)。超ワイド画面でセクション間の空白が過大になるのを避けるための意図的な妥協 */
+  --section-cut: min(21.26vw, 320px);
+
+  /* RGB 三つ組 (アルファ違いで多用する色) */
+  --color-primary-rgb: 79 207 114;
+  --color-ink-rgb: 22 36 27;
+  --color-surface-rgb: 255 255 255;
+  --color-mint-rgb: 223 243 234;
+  /* 黒の三つ組。暗い面を作る用途 (GaussianSplatBackground のデバッグ HUD) */
+  --color-shadow-rgb: 0 0 0;
+
+  /* 背景 */
+  --color-bg: #f3fbf6;
+  --color-bg-overlay: #f3fbf6;
+  --color-intro-bg: #ffffff;
+
+  /* ブランドカラー */
+  --color-primary: #4fcf72;
+  --color-primary-light: #9fe3b4;
+  /* 明るい面の上に載せる緑。大きい文字・アイコン・枠線用 (#f3fbf6 に対して 3.9:1) */
+  --color-primary-deep: #1f8f45;
+  /* 本文サイズの緑文字・リンク用。AA を満たすところまで暗くしてある (5.1:1) */
+  --color-primary-text: #1a7a3b;
+  /* 差し色。ホバーや小さなアクセントのごく小面積のみ */
+  --color-neon: #8cff7a;
+
+  /* 面 */
+  --color-surface: #ffffff;
+  --color-surface-mint: #dff3ea;
+
+  /* 文字 */
+  --color-ink: #16241b;
+  --color-ink-sub: #4a5f52;
+  /* 暗い面の上に載る明るい文字 (GaussianSplatBackground のデバッグ HUD)。
+     明るい面の上の文字には流用しないこと */
+  --color-text-on-dark: #dff3ea;
+
+  /* 個別パーツ */
+  --color-intro-line: #1f8f45;
+  /* 明るい背景でも読める赤 (#f3fbf6 に対して 5.3:1) */
+  --color-error: #c62828;
+
+  /* カードの共通シェイプ (ドット風オフセット影を引き継ぐ) */
+  --card-radius: 14px;
+  --card-shadow: 6px 6px 0 var(--color-primary);
+  --card-shadow-hover: 3px 3px 0 var(--color-primary);
+}
+
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-body);
+  background-color: var(--color-bg);
+  min-height: 100vh;
+  color: var(--color-ink);
+  line-height: 1.7;
+  position: relative;
+  -webkit-font-smoothing: antialiased;
+}
+
+#app {
+  min-height: 100vh;
+}
+
+img {
+  display: block;
+  max-width: 100%;
 }
 
 .progress-bar {
@@ -93,43 +180,37 @@ export default {
   top: 0;
   left: 0;
   height: 4px;
-  background: linear-gradient(90deg, #7db87d, #a8e6a3);
+  background: var(--color-primary);
   z-index: 9999;
   transition: width 0.1s ease;
-  box-shadow: 0 2px 4px rgba(125, 184, 125, 0.3);
+  box-shadow: 0 1px 0 rgb(var(--color-ink-rgb) / 0.15);
 }
 
-body {
-  font-family: "DotGothic16", monospace;
-  background-color: #111820;
-  min-height: 100vh;
-  color: #2d5a2d;
-  line-height: 1.4;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
-  position: relative;
+::selection {
+  background: var(--color-primary);
+  color: var(--color-ink);
 }
 
-#app {
-  min-height: 100vh;
+:focus-visible {
+  outline: 3px solid var(--color-primary-deep);
+  outline-offset: 3px;
 }
 
-/* ドット風のスクロールバー */
 ::-webkit-scrollbar {
   width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #e8f5e8;
+  background: var(--color-surface-mint);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #7db87d;
-  border-radius: 0;
+  background: var(--color-primary);
+  border-radius: 999px;
+  border: 3px solid var(--color-surface-mint);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6ba86b;
+  background: var(--color-primary-deep);
 }
 </style>

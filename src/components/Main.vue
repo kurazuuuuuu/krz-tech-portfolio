@@ -1,766 +1,84 @@
 <template>
-  <main>
-    <!-- Hero Section -->
-    <section id="about" class="hero">
-      <div class="hero-content">
-        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-avatar">
-          <img src="/img/icon.webp" alt="Profile" class="avatar" loading="lazy" />
-        </div>
-        <h1 v-motion :initial="heroInitial" :enter="heroEnter" class="hero-title">
-          {{ profile.name }}
-        </h1>
-        <p v-motion :initial="heroInitial" :enter="heroEnter" class="hero-subtitle">
-          {{ profile.description }}
-        </p>
-        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-skills">
-          <span v-for="skill in profile.skills" :key="skill.name" class="skill-tag">
-            <component :is="skill.icon" size="18" />
-            {{ skill.name }}
-          </span>
-        </div>
-        <div v-motion :initial="heroInitial" :enter="heroEnter" class="hero-actions">
-          <a @click="scrollTo('projects')" class="btn btn-primary">View Projects</a>
-        </div>
-      </div>
-    </section>
-
-    <!-- Introduction Section-->
-    <section id="introduction" class="introduction">
-      <div class="container">
-        <div v-motion="terminalMotion" class="terminal-window">
-          <div class="terminal-header">
-            <div class="terminal-buttons">
-              <span class="terminal-button red"></span>
-              <span class="terminal-button yellow"></span>
-              <span class="terminal-button green"></span>
-            </div>
-            <div class="terminal-title">INTRODUCTION.txt</div>
-          </div>
-          <div class="terminal-body">
-            <p class="terminal-text">{{ introduction }}</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Projects Section -->
-    <section id="projects" class="projects">
-      <div class="container">
-        <h2 v-motion="projectsTitleMotion" class="section-title">
-          <DancingText text="Projects" />
-        </h2>
-        <div v-if="projects.length === 0" v-motion="noProjectsMotion" class="no-projects">
-          <h3>Coming Soon(´・ω・｀)</h3>
-          <p>返事がない...</p>
-        </div>
-        <div v-else class="projects-grid">
-          <div
-            v-for="(project, index) in projects"
-            :key="project.id"
-            v-motion="projectMotion(index)"
-            class="project-card"
-            ref="projectCards"
-          >
-            <div class="project-images">
-              <img
-                :src="`/img/projects/${project.id}.webp`"
-                alt="Project"
-                class="project-image"
-                loading="lazy"
-              />
-            </div>
-            <div class="project-content">
-              <h3>{{ project.name }}</h3>
-              <p class="project-description">{{ project.description }}</p>
-              <div class="project-tech">
-                <span v-for="tech in project.technologies" :key="tech.name" class="tech-tag">
-                  <component :is="tech.icon" size="16" />
-                  {{ tech.name }}
-                </span>
-              </div>
-              <div class="project-links">
-                <a
-                  v-if="project.deploy_url"
-                  :href="project.deploy_url"
-                  class="project-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  ><HomeIcon
-                /></a>
-                <a
-                  v-if="project.github_url"
-                  :href="project.github_url"
-                  class="project-link"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  ><BrandGithubIcon
-                /></a>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section id="contact" class="contact">
-      <div class="container">
-        <h2 v-motion="contactTitleMotion" class="section-title">
-          <DancingText text="Let's Connect" />
-        </h2>
-        <div v-motion="contactContentMotion" class="contact-content">
-          <p class="contact-text">
-            どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！
-          </p>
-          <a href="mailto:contact@krz-tech.net" class="contact-email">
-            <MailIcon :size="24" />
-            contact@krz-tech.net
-          </a>
-          <div class="social-links">
-            <a
-              v-for="link in socialLinks"
-              :key="link.name"
-              :href="link.url"
-              class="social-link"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <component :is="link.icon" :size="20" />
-              {{ link.name }}
-            </a>
-          </div>
-        </div>
-      </div>
-    </section>
+  <main ref="root">
+    <HeroSection :intro-done="introDone" />
+    <ProfileSection />
+    <SkillsSection />
+    <WorksSection :projects="projects" />
+    <TopazSection />
+    <ContactSection />
   </main>
 </template>
 
-<script>
-import {
-  HomeIcon,
-  BrandTwitterIcon,
-  BrandGithubIcon,
-  BrandDiscordIcon,
-  BookIcon,
-  MailIcon,
-} from "vue-tabler-icons";
-import { convertWithTechIcons } from "../utils/techIcons";
-import { scrollToSection } from "../utils/scrollToSection.js";
-import { heroInitial, heroEnterMotion, scrollRevealMotion } from "../utils/motionPresets.js";
-import DancingText from "./DancingText.vue";
+<script setup>
+import { nextTick, onMounted, reactive, ref } from "vue";
+import { useScrollReveal } from "../composables/useGsap.js";
+import { projects as projectsData } from "../data/projects.js";
+import HeroSection from "./sections/HeroSection.vue";
+import ProfileSection from "./sections/ProfileSection.vue";
+import SkillsSection from "./sections/SkillsSection.vue";
+import WorksSection from "./sections/WorksSection.vue";
+import TopazSection from "./sections/TopazSection.vue";
+import ContactSection from "./sections/ContactSection.vue";
 
-export default {
-  name: "Main",
-  components: {
-    HomeIcon,
-    BrandTwitterIcon,
-    BrandGithubIcon,
-    BrandDiscordIcon,
-    BookIcon,
-    MailIcon,
-    DancingText,
-  },
-  data() {
-    return {
-      heroInitial,
-      heroEnter: heroEnterMotion(0),
-      terminalMotion: scrollRevealMotion(0),
-      projectsTitleMotion: scrollRevealMotion(0),
-      noProjectsMotion: scrollRevealMotion(80),
-      contactTitleMotion: scrollRevealMotion(0),
-      contactContentMotion: scrollRevealMotion(80),
-      projectMotionCache: {},
-      profile: {
-        name: "くらず / Kurazu",
-        description: "Backend & Infrastructure Engineer",
-        skills: ["VR / XR", "Python", "JavaScript", "Linux", "Network"].map(convertWithTechIcons),
-      },
-      introduction: [
-        "こんにちは、「くらず / Kurazu」 と申します。",
-        "",
-        "- 福岡県にある 情報系専門学校 の29卒学生",
-        "- 2026年4月より 「Iwaken Lab.」 にメンバー加入",
-        "",
-        "> 技術領域",
-        "- バックエンド (Python)",
-        "- インフラ (オンプレ、クラウド(AWS, GCP))",
-        "   - Cloudflare",
-        "   - Docker, Kubernetes",
-        "   - ProxmoxVE, BS (VM/CT)",
-        "",
-        "> メインじゃないけどよく使う技術",
-        "- AI / ML (エージェント・LLM・Diffusion)",
-        "- VR / XR (VRChat, WebXR)",
-        "",
-        "> コメント",
-        "自宅でサーバーを運用しています。(デスクトップ x 2, ミニPC x 1, L3スイッチ x 1)",
-        "実験・開発環境だったり、なんでも汎用的に使用しているためすごく便利です。なお電気代。",
-        "ハッカソンやイベントに現れる時があると思うので、その時はよろしくお願いします！",
-      ].join("\n"),
-      projects: [
-        {
-          id: "perugraph",
-          name: "ペルグラフ / Perugraph (in Dev)",
-          description: [
-            "VRChat コミュニティのためのフォトアルバムプラットフォーム",
-            "",
-            "Discordサーバーと紐づけ、アルバムを作成し、各サーバーでそのアルバムを運営してもらうことをコンセプトにしています。",
-            "",
-            "「Nitro入ってないけど...8Kとか綺麗な画像を非圧縮で送信したい...」そんな願いを解決します。",
-          ].join("\n"),
-          technologies: ["Kubernetes", "Cloudflare", "Discord.py", "Vue.js"].map(
-            convertWithTechIcons,
-          ),
-          deploy_url: "https://beta.perugraph.app",
-          github_url: null,
-        },
-        {
-          id: "github-fairy",
-          name: "Fairy",
-          description: [
-            "Discord 上で動作するアプリケーションです。",
-            "生成AIと Web フロントエンドを組み合わせて、日常的に触りやすい体験を目指して開発しています。",
-          ].join("\n"),
-          technologies: ["Discord.py", "Vue.js", "Gemini 2.5 Flash Lite", "MongoDB"].map(
-            convertWithTechIcons,
-          ),
-          deploy_url: "https://fairy.krz-tech.net",
-          github_url: "https://github.com/kurazuuuuuu/fairy",
-        },
-      ],
-      socialLinks: [
-        {
-          name: "Twitter",
-          url: "https://twitter.com/kurazu_vrc",
-          icon: "BrandTwitterIcon",
-        },
-        {
-          name: "GitHub",
-          url: "https://github.com/kurazuuuuuu/",
-          icon: "BrandGithubIcon",
-        },
-        {
-          name: "Zenn",
-          url: "https://zenn.dev/krz_tech",
-          icon: "BookIcon",
-        },
-      ],
-    };
-  },
-  mounted() {
-    this.updateProjectDescriptions();
-  },
-  methods: {
-    async fetchGitHubDescription(githubUrl) {
-      try {
-        const match = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
-        if (!match) return null;
+const props = defineProps({
+  // イントロ (IntroAnimation) が閉じ始めたか
+  introDone: { type: Boolean, default: false },
+});
 
-        const owner = match[1];
-        const repo = match[2];
+// GitHub API で description を上書きするので、元データを浅くコピーして reactive にする
+const projects = reactive(projectsData.map((project) => ({ ...project })));
 
-        const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
-        if (!response.ok) throw new Error("GitHub API request failed");
+async function fetchGitHubDescription(githubUrl) {
+  try {
+    const match = githubUrl.match(/github\.com\/([^/]+)\/([^/]+)/);
+    if (!match) return null;
 
-        const data = await response.json();
-        return data.description;
-      } catch (error) {
-        console.warn("Failed to fetch GitHub description:", error);
-        return null;
+    const owner = match[1];
+    const repo = match[2];
+
+    const response = await fetch(`https://api.github.com/repos/${owner}/${repo}`);
+    if (!response.ok) throw new Error("GitHub API request failed");
+
+    const data = await response.json();
+    return data.description;
+  } catch (error) {
+    console.warn("Failed to fetch GitHub description:", error);
+    return null;
+  }
+}
+
+async function updateProjectDescriptions() {
+  for (const project of projects) {
+    if (project.github_url) {
+      const description = await fetchGitHubDescription(project.github_url);
+      if (description) {
+        project.description = description;
       }
-    },
-    async updateProjectDescriptions() {
-      for (const project of this.projects) {
-        if (project.github_url) {
-          const description = await this.fetchGitHubDescription(project.github_url);
-          if (description) {
-            project.description = description;
-          }
-        }
-      }
-    },
-    projectMotion(index) {
-      if (!this.projectMotionCache[index]) {
-        this.projectMotionCache[index] = scrollRevealMotion(index * 90);
-      }
-      return this.projectMotionCache[index];
-    },
-    scrollTo(elementId) {
-      scrollToSection(elementId);
-    },
-  },
-};
+    }
+  }
+}
+
+const root = ref(null);
+
+// 各セクションのスクロールリビール ([data-reveal])。
+// イントロのオーバーレイが開いている間は隠したまま待たせて、裏でリビールが終わるのを防ぐ
+const { refresh: refreshReveal } = useScrollReveal(root, {
+  enabled: () => props.introDone,
+});
+
+onMounted(async () => {
+  await updateProjectDescriptions();
+  // description が伸びるとカードの高さが変わり、下のトリガ位置がずれる
+  await nextTick();
+  refreshReveal();
+});
 </script>
 
 <style scoped>
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 2rem;
-}
-
-/* Hero Section */
-.hero {
-  min-height: 80vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  padding: 2rem;
-}
-
-.hero-content {
-  max-width: 800px;
-  /* background: rgba(10, 20, 15, 0.5); */
-  /* backdrop-filter: blur(12px); */
-  /* -webkit-backdrop-filter: blur(12px); */
-  border-radius: 16px;
-  padding: 3rem 2.5rem;
-  /* border: 1px solid rgba(125, 184, 125, 0.15); */
-}
-
-.hero-avatar {
-  margin-bottom: 2rem;
-}
-
-.avatar {
-  width: 150px;
-  height: 150px;
-  border-radius: 50%;
-  border: 4px solid rgba(255, 255, 255, 0.3);
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-}
-
-.avatar:hover {
-  transform: scale(1.05);
-  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
-}
-
-.hero-title {
-  font-size: 3.5rem;
-  font-weight: 700;
-  color: #2d5a2d;
-  margin-bottom: 1rem;
-  text-shadow:
-    2px 2px 0 #a8e6a3,
-    4px 4px 0 #7db87d;
+main {
   position: relative;
-}
-
-.hero-subtitle {
-  font-size: 1.5rem;
-  color: #4a7a4a;
-  margin-bottom: 2rem;
-  font-weight: 300;
-  text-shadow: 1px 1px 0 #a8e6a3;
-}
-
-.hero-skills {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 1rem;
-  margin-bottom: 3rem;
-}
-
-.skill-tag {
-  background: #a8e6a3;
-  color: #2d5a2d;
-  padding: 0.5rem 1rem;
-  border: 2px solid #7db87d;
-  font-size: 0.9rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  transition: all 0.3s ease;
-  box-shadow: 2px 2px 0 #6ba86b;
-}
-
-.skill-tag:hover {
-  background: #7db87d;
-  color: #1a3d1a;
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 #6ba86b;
-}
-
-.hero-actions {
-  display: flex;
-  gap: 1rem;
-  justify-content: center;
-  flex-wrap: wrap;
-}
-
-.btn {
-  padding: 1rem 2rem;
-  border-radius: 50px;
-  text-decoration: none;
-  font-weight: 600;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  display: inline-block;
-  cursor: pointer;
-}
-
-.btn-primary {
-  background: #7db87d;
-  color: white;
-  border-color: #6ba86b;
-  box-shadow: 3px 3px 0 #5a9a5a;
-}
-
-.btn-primary:hover {
-  background: #6ba86b;
-  color: white;
-  transform: translate(-1px, -1px);
-  box-shadow: 4px 4px 0 #5a9a5a;
-}
-
-.btn-secondary {
-  background: transparent;
-  color: #2d5a2d;
-  border-color: #7db87d;
-  box-shadow: 3px 3px 0 #a8e6a3;
-}
-
-.btn-secondary:hover {
-  background: rgba(125, 184, 125, 0.2);
-  border-color: #6ba86b;
-  transform: translate(-1px, -1px);
-}
-
-/* Introduction Section */
-.introduction {
-  padding-bottom: 10rem;
-}
-
-.terminal-window {
-  max-width: 800px;
-  margin: 0 auto;
-  background: #1a3d1a;
-  border: 3px solid #7db87d;
-  border-radius: 8px;
-  box-shadow: 8px 8px 0 rgba(0, 0, 0, 0.2);
-  overflow: hidden;
-}
-
-.terminal-header {
-  background: #7db87d;
-  padding: 0.5rem 1rem;
-  display: flex;
-  align-items: center;
-  border-bottom: 3px solid #5a9a5a;
-}
-
-.terminal-buttons {
-  display: flex;
-  gap: 0.5rem;
-}
-
-.terminal-button {
-  width: 12px;
-  height: 12px;
-  border-radius: 50%;
-  border: 1px solid rgba(0, 0, 0, 0.2);
-}
-
-.terminal-button.red {
-  background: #ff5f56;
-}
-.terminal-button.yellow {
-  background: #ffbd2e;
-}
-.terminal-button.green {
-  background: #27c93f;
-}
-
-.terminal-title {
-  flex-grow: 1;
-  text-align: center;
-  font-weight: bold;
-  color: #1a3d1a;
-  margin-right: 40px; /* Balance the buttons */
-}
-
-.terminal-body {
-  padding: 2rem;
-  background: #1a3d1a;
-}
-
-.terminal-text {
-  font-size: 1rem;
-  color: #a8e6a3;
-  line-height: 1.8;
-  white-space: pre-wrap;
-  margin: 0;
-  text-align: left;
-}
-
-/* Projects Section */
-.projects {
-  padding: 5rem 0;
-  background: rgba(10, 20, 15, 0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-top: 1px solid rgba(125, 184, 125, 0.3);
-  border-bottom: 1px solid rgba(125, 184, 125, 0.3);
-}
-
-.section-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  color: #2d5a2d;
-  text-align: center;
-  margin-bottom: 3rem;
-  text-shadow:
-    2px 2px 0 #a8e6a3,
-    4px 4px 0 #7db87d;
-}
-
-.projects-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-  gap: 2rem;
-}
-
-.project-card {
-  background: rgba(30, 60, 30, 0.85);
-  padding: 2rem;
-  border: 2px solid rgba(125, 184, 125, 0.4);
-  border-radius: 8px;
-  transition: all 0.1s ease;
-}
-
-.project-card:hover {
-  box-shadow: 0 8px 32px rgba(125, 184, 125, 0.2);
-  background: rgba(40, 75, 40, 0.9);
-  border-color: rgba(125, 184, 125, 0.6);
-}
-
-.project-description {
-  white-space: pre-wrap;
-}
-
-.project-image {
-  margin-bottom: 1.5rem;
-  border-radius: 25%;
-  width: 100px;
-  height: 100px;
-  border: 3px solid #7db87d;
-}
-
-.project-placeholder {
-  width: 80px;
-  height: 80px;
-  background: #7db87d;
-  border: 3px solid #6ba86b;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 2rem;
-  font-weight: bold;
-  color: white;
-  margin: 0 auto;
-  box-shadow: 2px 2px 0 #5a9a5a;
-}
-
-.project-content h3 {
-  color: #a8e6a3;
-  font-size: 1.75rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.project-content p {
-  color: rgba(168, 230, 163, 0.8);
-  margin-bottom: 1.5rem;
-  line-height: 1.6;
-}
-
-.project-tech {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-bottom: 1.5rem;
-}
-
-.tech-tag {
-  background: rgba(125, 184, 125, 0.2);
-  color: #a8e6a3;
-  padding: 0.3rem 0.5rem;
-  border: 1px solid rgba(125, 184, 125, 0.3);
-  font-size: 0.8rem;
-  font-weight: 500;
-  display: flex;
-  align-items: center;
-  gap: 0.3rem;
-  border-radius: 4px;
-}
-
-.project-links {
-  display: flex;
-  gap: 1rem;
-}
-
-.project-link {
-  color: #2d5a2d;
-  text-decoration: none;
-  font-weight: 500;
-  padding: 0.25rem 0.5rem;
-  transition: all 0.3s ease;
-}
-
-.project-link:hover {
-  background: #7db87d;
-  color: white;
-  transform: translate(-1px, -1px);
-  box-shadow: 3px 3px 0 #6ba86b;
-}
-
-.no-projects {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: rgba(30, 60, 30, 0.85);
-  border: 2px solid rgba(125, 184, 125, 0.4);
-  border-radius: 8px;
-  max-width: 500px;
-  margin: 0 auto;
-}
-
-.no-projects h3 {
-  color: #a8e6a3;
-  font-size: 1.8rem;
-  margin-bottom: 1rem;
-  font-weight: 600;
-}
-
-.no-projects p {
-  color: rgba(168, 230, 163, 0.8);
-  font-size: 1.1rem;
-  line-height: 1.6;
-}
-
-/* Contact Section */
-.contact {
-  padding: 5rem 0;
-  text-align: center;
-  background: rgba(10, 20, 15, 0.5);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-
-.contact-text {
-  font-size: 1.2rem;
-  color: rgba(168, 230, 163, 0.85);
-  margin-bottom: 2rem;
-  max-width: 600px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.contact-email {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  font-size: 1.3rem;
-  font-weight: 600;
-  color: #a8e6a3;
-  text-decoration: none;
-  padding: 1rem 2rem;
-  margin-bottom: 2rem;
-  background: rgba(30, 60, 30, 0.8);
-  border: 2px solid rgba(125, 184, 125, 0.4);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.contact-email:hover {
-  background: rgba(50, 90, 50, 0.9);
-  border-color: #7db87d;
-}
-
-.social-links {
-  display: flex;
-  justify-content: center;
-  gap: 2rem;
-  flex-wrap: wrap;
-}
-
-.social-link {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  color: #a8e6a3;
-  text-decoration: none;
-  font-weight: 500;
-  padding: 1rem 2rem;
-  background: rgba(30, 60, 30, 0.8);
-  border: 2px solid rgba(125, 184, 125, 0.4);
-  border-radius: 8px;
-  transition: all 0.3s ease;
-}
-
-.social-link:hover {
-  background: rgba(50, 90, 50, 0.9);
-  color: #c0f0c0;
-  border-color: #7db87d;
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .hero-title {
-    font-size: 2.5rem;
-  }
-
-  .hero-subtitle {
-    font-size: 1.2rem;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .btn {
-    width: 200px;
-  }
-
-  .projects-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .social-links {
-    flex-direction: column;
-    align-items: center;
-  }
-
-  .social-link {
-    width: 200px;
-    justify-content: center;
-  }
-}
-
-@media (max-width: 480px) {
-  .container {
-    padding: 0 1rem;
-  }
-
-  .hero {
-    padding: 1rem;
-  }
-
-  .avatar {
-    width: 120px;
-    height: 120px;
-  }
-
-  .hero-title {
-    font-size: 2rem;
-  }
-
-  .section-title {
-    font-size: 2rem;
-  }
+  /* 斜めカット・装飾のはみ出しで横スクロールを出さない */
+  overflow-x: hidden;
+  overflow-x: clip;
 }
 </style>

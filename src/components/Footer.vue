@@ -1,93 +1,116 @@
 <template>
   <footer class="footer">
     <div class="container">
-      <div class="footer-content">
-        <p>&copy; {{ year }} くらず / Kurazu. Built with Vue.js</p>
-        <div class="footer-links">
-          <a
-            href="https://github.com/kurazuuuuuu/"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label="GitHub"
-          >
-            <BrandGithubIcon :size="20" />
-          </a>
-        </div>
+      <p class="copyright">&copy; {{ year }} くらず / Kurazu. Built with Vue.js</p>
+
+      <div class="footer-actions">
+        <a
+          href="https://github.com/kurazuuuuuu/"
+          class="footer-icon"
+          target="_blank"
+          rel="noopener noreferrer"
+          aria-label="GitHub"
+        >
+          <IconBrandGithub :size="20" :stroke="2" />
+        </a>
+
+        <button type="button" class="to-top" @click="scrollToSection('hero')">
+          <IconCrown :size="18" :stroke="2.2" aria-hidden="true" />
+          TOP
+        </button>
       </div>
     </div>
   </footer>
 </template>
 
 <script setup>
-import { BrandGithubIcon } from "vue-tabler-icons";
+import { IconBrandGithub, IconCrown } from "@tabler/icons-vue";
+import { scrollToSection } from "../utils/scrollToSection.js";
 
 const year = new Date().getFullYear();
 </script>
 
 <style scoped>
 .footer {
-  background: rgba(168, 230, 163, 0.9);
-  border-top: 2px solid #7db87d;
-  padding: 1rem 0;
-  box-shadow: 0 -1px 0 #6ba86b;
+  position: relative;
+  overflow: hidden;
+  overflow: clip;
+  background: var(--color-primary);
+  color: var(--color-ink);
+  margin-top: calc(28px - var(--section-cut));
+  padding: calc(var(--section-cut) + 2rem) 0 2rem;
+  clip-path: polygon(0 var(--section-cut), 100% 0, 100% 100%, 0 100%);
+}
+
+/* ビビッドグリーンの面の上では、既定の深い緑の focus リングが 2.07:1 しかない */
+.footer :focus-visible {
+  outline-color: var(--color-ink);
 }
 
 .container {
-  max-width: 1200px;
+  width: min(1100px, 100%);
   margin: 0 auto;
-  padding: 0 1.5rem;
-}
-
-.footer-content {
+  padding: 0 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  color: #2d5a2d;
-  font-size: 0.875rem;
-  line-height: 1.4;
-  min-height: 44px;
+  gap: 1rem;
 }
 
-.footer-links {
+.copyright {
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.footer-actions {
   display: flex;
-  gap: 2rem;
+  align-items: center;
+  gap: 0.75rem;
 }
 
-.footer-links a {
-  color: #4a7a4a;
-  text-decoration: none;
-  transition: all 0.3s ease;
-  border: 2px solid transparent;
-  min-width: 44px;
-  min-height: 44px;
+.footer-icon,
+.to-top {
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  gap: 0.4rem;
+  min-height: 44px;
+  color: var(--color-ink);
+  background: var(--color-surface);
+  border: 2px solid var(--color-ink);
+  border-radius: 999px;
+  text-decoration: none;
+  cursor: pointer;
+  transition:
+    background 0.18s ease,
+    translate 0.18s ease;
 }
 
-.footer-links a:hover {
-  color: #2d5a2d;
-  border-color: #7db87d;
-  background: rgba(125, 184, 125, 0.2);
+.footer-icon {
+  width: 44px;
+}
+
+.to-top {
+  font-family: var(--font-display);
+  font-variation-settings:
+    "ROND" 100,
+    "wght" 800;
+  font-size: 0.85rem;
+  letter-spacing: 0.12em;
+  padding: 0 1.1rem;
+}
+
+.footer-icon:hover,
+.to-top:hover {
+  background: var(--color-neon);
+  translate: 0 -2px;
 }
 
 @media (max-width: 768px) {
-  .footer {
-    padding: 0.75rem 0;
-  }
-
   .container {
-    padding: 0 1rem;
-  }
-
-  .footer-content {
     flex-direction: column;
-    gap: 0.5rem;
     text-align: center;
-  }
-
-  .footer-links {
-    gap: 1rem;
+    padding: 0 1.25rem;
   }
 }
 </style>
