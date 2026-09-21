@@ -86,6 +86,11 @@ const props = defineProps({
     type: String,
     default: "medium",
   },
+  // true になった時点から点群を手前→奥へリビールする (イントロが閉じた合図)
+  reveal: {
+    type: Boolean,
+    default: true,
+  },
 });
 
 // ---- Emits --------------------------------------------------------
@@ -126,6 +131,41 @@ let glassUniforms = null; // Shared uniforms for glass shader
 // Refraction is blurred by the distortion anyway, so a half-res background
 // buffer cuts Pass-1 fill rate to ~1/4 with no visible quality loss.
 const REFRACTION_SCALE = 0.5;
+
+// ---- Point cloud reveal (手前→奥へ波面が走る) ----------------------
+const REVEAL_DURATION_MS = 2500;
+// イントロの白オーバーレイがフェードアウトする間 (0.4s) は見えないので少し待つ
+const REVEAL_DELAY_MS = 300;
+// 波面の厚み (正規化した log 距離 0-1 に対する割合)。帯の中で点が輝度 0 から通常の明るさへ立ち上がる
+const REVEAL_BAND = 0.25;
+const prefersReducedMotion =
+  typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+// reveal が true になってからの経過時間 (タブ非表示中は進めない)
+let revealElapsed = 0;
+
+// カメラから見える点の距離分布 (log) を間引きサンプルで実測し、波面の走査範囲を決める。
+// 透視投影では遠方ほど画面上で密になるため、log 距離で走らせると見た目の速度が均一になる。
+const measureRevealRange = (positions, pointCount) => {
+  splatMesh.updateMatrixWorld(true);
+  camera.updateMatrixWorld(true);
+  const stride = Math.max(1, Math.floor(pointCount / 20000));
+  const v = new THREE.Vector3();
+  const samples = [];
+  for (let i = 0; i < pointCount; i += stride) {
+    v.fromArray(positions, i * 3).applyMatrix4(splatMesh.matrixWorld);
+    const dist = v.distanceTo(camera.position);
+    v.project(camera);
+    // 画面内 (少し余裕を持たせる) かつ near/far の間にある点だけを対象にする
+    if (Math.abs(v.x) > 1.1 || Math.abs(v.y) > 1.1 || v.z < -1 || v.z > 1) continue;
+    samples.push(dist);
+  }
+  if (samples.length < 10) return { near: Math.log(0.1), far: Math.log(10) };
+  samples.sort((a, b) => a - b);
+  const at = (q) => samples[Math.min(samples.length - 1, Math.floor(samples.length * q))];
+  const near = Math.log(Math.max(at(0.01), 1e-3));
+  const far = Math.log(Math.max(at(0.97), 1e-3));
+  return { near, far: Math.max(far, near + 0.1) };
+};
 
 // ---- Event Listeners ----------------------------------------------
 const onResize = () => {
@@ -323,6 +363,10 @@ const init = async () => {
             uCameraPos: { value: new THREE.Vector3() },
             uColorA: { value: new THREE.Color(0x7db87d) }, // Base cyber green
             uColorB: { value: new THREE.Color(0x42f5e3) }, // Cyan for iridescence
+            // Reveal wave: front position in normalized log-distance (0 .. 1 + REVEAL_BAND)
+            uRevealFront: { value: prefersReducedMotion ? 1 + REVEAL_BAND : 0 },
+            uRevealBand: { value: REVEAL_BAND },
+            uRevealRange: { value: new THREE.Vector2(0, 1) }, // (log near, log far)
           };
 
           material.onBeforeCompile = (shader) => {
@@ -331,6 +375,9 @@ const init = async () => {
             shader.uniforms.uCameraPos = customUniforms.uCameraPos;
             shader.uniforms.uColorA = customUniforms.uColorA;
             shader.uniforms.uColorB = customUniforms.uColorB;
+            shader.uniforms.uRevealFront = customUniforms.uRevealFront;
+            shader.uniforms.uRevealBand = customUniforms.uRevealBand;
+            shader.uniforms.uRevealRange = customUniforms.uRevealRange;
 
             // Pass varying to fragment shader for colors
             shader.vertexShader =
@@ -340,9 +387,13 @@ const init = async () => {
               uniform vec3 uCameraPos;
               uniform vec3 uColorA;
               uniform vec3 uColorB;
+              uniform float uRevealFront;
+              uniform float uRevealBand;
+              uniform vec2 uRevealRange;
               attribute float aOpacity;
               varying vec3 vMixedColor;
               varying float vDepth;
+              varying float vReveal;
             \n` + shader.vertexShader;
 
             // Replace the position transform logic to inject wobble & mouse repulsion
@@ -387,6 +438,17 @@ const init = async () => {
               
               // 5. Calculate Depth for Fog
               vDepth = ndcPos.z / ndcPos.w;
+
+              // 6. Reveal wave (near -> far). "passed" is 0 ahead of the wave front and
+              //    reaches 1 once the whole band has swept past this point.
+              float viewDist = length((modelViewMatrix * vec4(position, 1.0)).xyz);
+              float revealT = clamp(
+                (log(max(viewDist, 1e-3)) - uRevealRange.x) / (uRevealRange.y - uRevealRange.x),
+                0.0, 1.0
+              );
+              float passed = clamp((uRevealFront - revealT) / uRevealBand, 0.0, 1.0);
+              // Brightness ramps from 0 up to the normal glow across the band (no overshoot)
+              vReveal = smoothstep(0.0, 1.0, passed);
               `,
             );
 
@@ -395,6 +457,7 @@ const init = async () => {
               `
               varying vec3 vMixedColor;
               varying float vDepth;
+              varying float vReveal;
             \n` + shader.fragmentShader;
 
             // Replace outgoing color logic to use mixed color and apply Depth Fog
@@ -402,19 +465,21 @@ const init = async () => {
               .replace(
                 "vec4 diffuseColor = vec4( diffuse, opacity );",
                 `
-              vec4 diffuseColor = vec4( vMixedColor, opacity );
+              // vReveal: hidden (0) until the reveal wave reaches this point, then ramps to 1
+              vec4 diffuseColor = vec4( vMixedColor, opacity * vReveal );
               `,
               )
               .replace(
-                "#include <dithering_fragment>",
+                // NOTE: the points shader has no <dithering_fragment>; hook the last include instead
+                "#include <premultiplied_alpha_fragment>",
                 `
-              #include <dithering_fragment>
-              
               // Depth Fog calculation (fade out points extremely far or extremely close)
               float fogNear = 0.5;
               float fogFar = 2.0;
               float fogFactor = smoothstep(fogNear, fogFar, vDepth);
               gl_FragColor.a *= (1.0 - fogFactor); // Fade out distant points
+
+              #include <premultiplied_alpha_fragment>
               `,
               );
           };
@@ -426,6 +491,9 @@ const init = async () => {
           splatMesh.quaternion.fromArray(props.sceneRotation);
           splatMesh.position.fromArray(props.scenePosition);
           splatMesh.scale.fromArray(props.sceneScale);
+
+          const revealRange = measureRevealRange(positions, validPoints);
+          customUniforms.uRevealRange.value.set(revealRange.near, revealRange.far);
 
           scene.add(splatMesh);
           console.log(
@@ -595,6 +663,8 @@ const updateCameraInfo = () => {
 const animate = (time = 0) => {
   animationId = requestAnimationFrame(animate);
   if (time - lastTime < FRAME_MS) return;
+  // Clamp so a long pause (hidden tab) doesn't make the reveal jump ahead
+  const dt = Math.min(time - lastTime, 100);
   lastTime = time;
 
   // Apply parallax logic if camera is available
@@ -620,6 +690,14 @@ const animate = (time = 0) => {
     splatMesh.userData.uniforms.time.value = time / 1000;
     splatMesh.userData.uniforms.uMouse.value.set(smoothMouse.x, smoothMouse.y);
     splatMesh.userData.uniforms.uCameraPos.value.copy(camera.position);
+
+    // Advance the reveal wave once the intro has closed (easeOutQuad: bursts out, then settles)
+    const revealFront = splatMesh.userData.uniforms.uRevealFront;
+    if (props.reveal && revealFront.value < 1 + REVEAL_BAND) {
+      revealElapsed += dt;
+      const p = Math.min(Math.max((revealElapsed - REVEAL_DELAY_MS) / REVEAL_DURATION_MS, 0), 1);
+      revealFront.value = (1 - (1 - p) * (1 - p)) * (1 + REVEAL_BAND);
+    }
   }
 
   // Ensure SPARK's own updates occur if necessary (skipped for PointCloud)

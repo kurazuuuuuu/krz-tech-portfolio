@@ -12,6 +12,7 @@
       :scene-rotation="[1, 0, 0, 0.3]"
       :scene-scale="[1.5, 1.5, 1.5]"
       :sh-degree="0"
+      :reveal="introDone"
       @loaded="onBackgroundLoaded"
       @progress="onBackgroundProgress"
       @error="onBackgroundError"
@@ -19,7 +20,11 @@
 
     <ThreeBackground v-else @loaded="onBackgroundLoaded" @progress="onBackgroundProgress" />
 
-    <IntroAnimation :ready="backgroundLoaded" :progress="backgroundProgress" />
+    <IntroAnimation
+      :ready="backgroundLoaded"
+      :progress="backgroundProgress"
+      @done="introDone = true"
+    />
     <Main />
     <Footer />
   </div>
@@ -51,6 +56,7 @@ export default {
     return {
       scrollProgress: 0,
       backgroundLoaded: false,
+      introDone: false,
       backgroundProgress: 0,
       backgroundQuality: resolveBackgroundQuality(),
       useFallbackBackground: false,
