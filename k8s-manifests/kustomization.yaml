@@ -1,8 +1,8 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 resources:
-- deployment.yaml
-- service.yaml
+  - deployment.yaml
+  - service.yaml
 images:
-- name: ghcr.io/kurazuuuuuu/krz-tech-portfolio
-  newTag: adbc9b78c2f52b6a3115329e4e0a497692105f0f
+  - name: ghcr.io/kurazuuuuuu/krz-tech-portfolio
+    digest: sha256:be795e73411e3089e7e94b14d090e940fe887cd0dc09d8a5a8ec4526849be876
