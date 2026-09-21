@@ -319,14 +319,18 @@ addParallax(({ reduceMotion, conditions }) => {
 .hero-copy::before {
   content: "";
   position: absolute;
-  inset: -6% -8% -6% -10%;
+  inset: -22% -20%;
   z-index: -1;
   pointer-events: none;
+  /*
+   * closest-side で楕円を箱に内接させ、辺に届く前に必ず透明にする。
+   * 既定の farthest-corner だと辺の位置でアルファが残り、箱の形に四角く切れて見える。
+   */
   background: radial-gradient(
-    ellipse at 40% 50%,
+    ellipse closest-side at 50% 50%,
     rgb(var(--color-surface-rgb) / 0.85) 0%,
-    rgb(var(--color-surface-rgb) / 0.55) 55%,
-    rgb(var(--color-surface-rgb) / 0) 78%
+    rgb(var(--color-surface-rgb) / 0.55) 50%,
+    rgb(var(--color-surface-rgb) / 0) 100%
   );
 }
 
@@ -486,7 +490,7 @@ addParallax(({ reduceMotion, conditions }) => {
   }
 
   .hero-copy::before {
-    inset: -8% -10%;
+    inset: -18% -14%;
   }
 
   .hero-band {
