@@ -61,7 +61,8 @@ export const convertWithTechIcons = (techName) => {
   } else if (
     lowerName.includes("network") ||
     lowerName.includes("server") ||
-    lowerName.includes("proxmox")
+    lowerName.includes("proxmox") ||
+    lowerName.includes("オンプレ")
   ) {
     icon = IconServer;
   } else if (lowerName.includes("github")) {

@@ -1,10 +1,11 @@
 import { onMounted, onUnmounted, unref, watch } from "vue";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
+import { SplitText } from "gsap/SplitText";
 
-gsap.registerPlugin(ScrollTrigger);
+gsap.registerPlugin(ScrollTrigger, SplitText);
 
-export { gsap, ScrollTrigger };
+export { gsap, ScrollTrigger, SplitText };
 
 /*
  * reduced-motion の分岐は gsap.matchMedia() に一本化する。

@@ -89,52 +89,66 @@ export default {
 
 <style>
 /*
- * カラートークン。役割ベースで定義してあるので、テーマ変更はここの値だけを差し替える。
+ * デザイントークン。役割ベースで定義してあるので、テーマ変更はここの値だけを差し替える。
  * アルファ違いで使う色は RGB 三つ組 (--*-rgb) として持ち、使用側でアルファを付けて参照する。
  */
 :root {
+  /* フォント。英数字は Poppins、日本語グリフは Poppins に無いので Zen Maru Gothic へ落ちる */
+  --font-body: "Poppins", "Zen Maru Gothic", sans-serif;
+  --font-latin: "Poppins", sans-serif;
+  /* Doto はラテン文字のみ。英字の強調にだけ使う */
+  --font-display: "Doto", "Poppins", monospace;
+
+  /* 装飾の傾き。3D 背景のスピード線と揃える共通値 */
+  --deco-angle: -12deg;
+  /* セクション境目の斜めカットの高さ。tan(12deg) = 0.2126 なので 21.26vw で --deco-angle と一致する。
+     〜1505px までは 12° を維持し、それ以上では 320px で頭打ちにして角度が浅くなる
+     (1920px で約 9.5°)。超ワイド画面でセクション間の空白が過大になるのを避けるための意図的な妥協 */
+  --section-cut: min(21.26vw, 320px);
+
   /* RGB 三つ組 (アルファ違いで多用する色) */
-  --color-primary-rgb: 125 184 125;
-  --color-primary-light-rgb: 168 230 163;
-  --color-text-on-dark-rgb: 168 230 163;
-  --color-surface-panel-rgb: 10 20 15;
-  --color-surface-card-rgb: 30 60 30;
-  --color-border-light-rgb: 255 255 255;
+  --color-primary-rgb: 79 207 114;
+  --color-ink-rgb: 22 36 27;
+  --color-surface-rgb: 255 255 255;
+  --color-mint-rgb: 223 243 234;
+  /* 黒の三つ組。暗い面を作る用途 (GaussianSplatBackground のデバッグ HUD) */
   --color-shadow-rgb: 0 0 0;
 
   /* 背景 */
-  --color-bg: #111820;
-  --color-bg-overlay: #050810;
+  --color-bg: #f3fbf6;
+  --color-bg-overlay: #f3fbf6;
   --color-intro-bg: #ffffff;
 
-  /* ブランドカラー (面・境界線・ドット風オフセット影に使う 4 段ランプ) */
-  --color-primary-light: rgb(var(--color-primary-light-rgb));
-  --color-primary: rgb(var(--color-primary-rgb));
-  --color-primary-hover: #6ba86b;
-  --color-primary-shadow: #5a9a5a;
+  /* ブランドカラー */
+  --color-primary: #4fcf72;
+  --color-primary-light: #9fe3b4;
+  /* 明るい面の上に載せる緑。大きい文字・アイコン・枠線用 (#f3fbf6 に対して 3.9:1) */
+  --color-primary-deep: #1f8f45;
+  /* 本文サイズの緑文字・リンク用。AA を満たすところまで暗くしてある (5.1:1) */
+  --color-primary-text: #1a7a3b;
+  /* 差し色。ホバーや小さなアクセントのごく小面積のみ */
+  --color-neon: #8cff7a;
 
-  /* パネル・カードの面 */
-  --color-surface-terminal: #1a3d1a;
-  --color-surface-card-hover: rgb(40 75 40 / 0.9);
-  --color-surface-interactive-hover: rgb(50 90 50 / 0.9);
+  /* 面 */
+  --color-surface: #ffffff;
+  --color-surface-mint: #dff3ea;
 
-  /* 文字色 */
-  --color-text-strong: #2d5a2d;
-  --color-text-sub: #4a7a4a;
-  --color-text-on-dark: rgb(var(--color-text-on-dark-rgb));
-  --color-text-highlight: #c0f0c0;
-  --color-text-on-primary: #ffffff;
-  --color-text-on-primary-dark: #1a3d1a;
+  /* 文字 */
+  --color-ink: #16241b;
+  --color-ink-sub: #4a5f52;
+  /* 暗い面の上に載る明るい文字 (GaussianSplatBackground のデバッグ HUD)。
+     明るい面の上の文字には流用しないこと */
+  --color-text-on-dark: #dff3ea;
 
   /* 個別パーツ */
-  --color-intro-line: #3a6b3a;
-  --color-scrollbar-track: #e8f5e8;
+  --color-intro-line: #1f8f45;
+  /* 明るい背景でも読める赤 (#f3fbf6 に対して 5.3:1) */
+  --color-error: #c62828;
 
-  /* シグナル・エラー */
-  --color-signal-red: #ff5f56;
-  --color-signal-yellow: #ffbd2e;
-  --color-signal-green: #27c93f;
-  --color-error: #e57373;
+  /* カードの共通シェイプ (ドット風オフセット影を引き継ぐ) */
+  --card-radius: 14px;
+  --card-shadow: 6px 6px 0 var(--color-primary);
+  --card-shadow-hover: 3px 3px 0 var(--color-primary);
 }
 
 * {
@@ -143,48 +157,61 @@ export default {
   box-sizing: border-box;
 }
 
-.progress-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 4px;
-  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
-  z-index: 9999;
-  transition: width 0.1s ease;
-  box-shadow: 0 2px 4px rgb(var(--color-primary-rgb) / 0.3);
-}
-
 body {
-  font-family: "DotGothic16", monospace;
+  font-family: var(--font-body);
   background-color: var(--color-bg);
   min-height: 100vh;
-  color: var(--color-text-strong);
-  line-height: 1.4;
-  image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
+  color: var(--color-ink);
+  line-height: 1.7;
   position: relative;
+  -webkit-font-smoothing: antialiased;
 }
 
 #app {
   min-height: 100vh;
 }
 
-/* ドット風のスクロールバー */
+img {
+  display: block;
+  max-width: 100%;
+}
+
+.progress-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 4px;
+  background: var(--color-primary);
+  z-index: 9999;
+  transition: width 0.1s ease;
+  box-shadow: 0 1px 0 rgb(var(--color-ink-rgb) / 0.15);
+}
+
+::selection {
+  background: var(--color-primary);
+  color: var(--color-ink);
+}
+
+:focus-visible {
+  outline: 3px solid var(--color-primary-deep);
+  outline-offset: 3px;
+}
+
 ::-webkit-scrollbar {
   width: 12px;
 }
 
 ::-webkit-scrollbar-track {
-  background: var(--color-scrollbar-track);
+  background: var(--color-surface-mint);
 }
 
 ::-webkit-scrollbar-thumb {
   background: var(--color-primary);
-  border-radius: 0;
+  border-radius: 999px;
+  border: 3px solid var(--color-surface-mint);
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary-hover);
+  background: var(--color-primary-deep);
 }
 </style>
