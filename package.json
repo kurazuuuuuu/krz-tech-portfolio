@@ -5,7 +5,8 @@
     "dev": "vp dev",
     "build": "vp build",
     "preview": "vp preview",
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "sync:topaz": "node scripts/sync-topaz.mjs"
   },
   "dependencies": {
     "@sparkjsdev/spark": "^2.2.0",
@@ -18,6 +19,7 @@
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^6.0.9",
+    "sharp": "^0.35.4",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   },

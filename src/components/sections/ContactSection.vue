@@ -1,7 +1,7 @@
 <template>
   <section id="contact" class="contact">
     <div class="container">
-      <SectionHeading number="04" en="CONTACT" ja="お問い合わせ" />
+      <SectionHeading number="05" en="CONTACT" ja="お問い合わせ" />
 
       <div class="contact-body">
         <p data-reveal="contact" class="contact-text">
@@ -38,7 +38,8 @@ import { socialLinks } from "../../data/socialLinks.js";
   position: relative;
   overflow: hidden;
   overflow: clip;
-  background: rgb(var(--color-surface-rgb) / 0.94);
+  /* TOPA'Z (白) が間に入ったぶん、ミント/白の交互を保つためにこちらをミントへ */
+  background: rgb(var(--color-mint-rgb) / 0.92);
   margin-top: calc(28px - var(--section-cut));
   padding: calc(var(--section-cut) + 3rem) 0 calc(var(--section-cut) + 4rem);
   clip-path: polygon(0 var(--section-cut), 100% 0, 100% calc(100% - var(--section-cut)), 0 100%);

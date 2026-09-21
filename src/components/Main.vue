@@ -4,6 +4,7 @@
     <ProfileSection />
     <SkillsSection />
     <WorksSection :projects="projects" />
+    <TopazSection />
     <ContactSection />
   </main>
 </template>
@@ -16,6 +17,7 @@ import HeroSection from "./sections/HeroSection.vue";
 import ProfileSection from "./sections/ProfileSection.vue";
 import SkillsSection from "./sections/SkillsSection.vue";
 import WorksSection from "./sections/WorksSection.vue";
+import TopazSection from "./sections/TopazSection.vue";
 import ContactSection from "./sections/ContactSection.vue";
 
 const props = defineProps({
