@@ -10,7 +10,7 @@ export const skillGroups = [
     title: "BACKEND",
     level: "MAIN",
     description: "バックエンド",
-    technologies: ["Python", "Kotlin"].map(convertWithTechIcons),
+    technologies: ["Python", "Kotlin", "Go"].map(convertWithTechIcons),
   },
   {
     id: "infra",
@@ -34,14 +34,14 @@ export const skillGroups = [
     id: "ai-ml",
     title: "AI / ML",
     level: "SUB",
-    description: "メインじゃないけどよく使う技術",
-    technologies: ["エージェント", "LLM", "Diffusion"].map(convertWithTechIcons),
+    description: "自宅でローカルLLM運用もしています。",
+    technologies: ["AIエージェント", "LLM/VLM"].map(convertWithTechIcons),
   },
   {
     id: "vr-xr",
     title: "VR / XR",
     level: "SUB",
-    description: "メインじゃないけどよく使う技術",
-    technologies: ["VRChat", "WebXR"].map(convertWithTechIcons),
+    description: "VRは初代Oculus Questから。",
+    technologies: ["Unity", "WebXR"].map(convertWithTechIcons),
   },
 ];

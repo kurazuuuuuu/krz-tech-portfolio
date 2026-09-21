@@ -6,6 +6,7 @@
       <div class="contact-body">
         <p data-reveal="contact" class="contact-text">
           どなたでも大歓迎です！技術的な話だけじゃなく色々見てみてください！
+          Xが一番気が付くと思われます！
         </p>
 
         <a data-reveal="contact" href="mailto:contact@krz-tech.net" class="contact-email">
