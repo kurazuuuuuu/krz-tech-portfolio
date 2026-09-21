@@ -44,7 +44,7 @@ const TUNING = {
   // ---- 点群 (インク) ----
   // 1 点あたりの染まり具合。この splat は 1px あたりの重なりが平均 1.1 (q99 でも 7) と薄いので、
   // 小さくすると何も見えない。黒潰れの心配より「見えるか」を優先して高めに取る。
-  inkDensity: 0.75,
+  inkDensity: 1,
   pointSizeScale: 1.5, // props.pointSize に掛かる倍率
   pointSoftness: 0.6, // 0 = 硬い円, 1 = 中心から放射状に減衰
   colorA: "#4fcf72", // ビビッドグリーン
@@ -58,12 +58,12 @@ const TUNING = {
   // 手前の大粒だけが濃くなりすぎるのを抑える基準サイズ (描画バッファ px)。
   // これより大きい点は面積比で濃度を落とす。0 以下で無効。
   refPointPx: 3.5,
-  repelStrength: 0.06, // マウス斥力 (旧 0.1 の約 6 割)
+  repelStrength: 0.005, // マウス斥力。前面の DOM が主役なので、気づく程度のごく弱い反応に留める
   wobbleStrength: 0.01,
   parallaxScale: 1.0, // props.parallaxRange に掛かる倍率
 
   // ---- スピード線 ----
-  lineCount: { high: 40, medium: 24, low: 12 },
+  lineCount: { high: 50, medium: 24, low: 12 },
   // DOM 側の斜め帯と揃えるため CSS と同じ符号 (負 = 右上がり) で持つ
   lineAngleDeg: -12,
   lineAngleJitterDeg: 3,
@@ -71,9 +71,9 @@ const TUNING = {
   lineLengthMin: 0.12,
   lineLengthMax: 0.45,
   lineWidthMin: 0.0015,
-  lineWidthMax: 0.005,
+  lineWidthMax: 0.01,
   lineSpeedMin: 0.02,
-  lineSpeedMax: 0.09,
+  lineSpeedMax: 0.07,
   lineDepthNear: 0.6, // カメラからの配置距離
   lineDepthFar: 6.0,
   // 線もビュー空間の線形深度。配置距離 0.6〜6 に合わせた範囲
