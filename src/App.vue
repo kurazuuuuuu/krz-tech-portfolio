@@ -18,7 +18,7 @@
       @error="onBackgroundError"
     />
 
-    <ThreeBackground v-else @loaded="onBackgroundLoaded" @progress="onBackgroundProgress" />
+    <FallbackBackground v-else @loaded="onBackgroundLoaded" @progress="onBackgroundProgress" />
 
     <IntroAnimation
       :ready="backgroundLoaded"
@@ -33,6 +33,7 @@
 <script>
 import { defineAsyncComponent } from "vue";
 import IntroAnimation from "./components/IntroAnimation.vue";
+import FallbackBackground from "./components/FallbackBackground.vue";
 import Main from "./components/Main.vue";
 import Footer from "./components/Footer.vue";
 import { resolveBackgroundQuality } from "./utils/backgroundQuality.js";
@@ -41,13 +42,11 @@ const GaussianSplatBackground = defineAsyncComponent(
   () => import("./components/GaussianSplatBackground.vue"),
 );
 
-const ThreeBackground = defineAsyncComponent(() => import("./components/ThreeBackground.vue"));
-
 export default {
   name: "App",
   components: {
     GaussianSplatBackground,
-    ThreeBackground,
+    FallbackBackground,
     IntroAnimation,
     Main,
     Footer,

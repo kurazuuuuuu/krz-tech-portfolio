@@ -812,7 +812,8 @@ onBeforeUnmount(() => {
   border-radius: 8px;
   border: 1px solid var(--color-primary);
   color: var(--color-text-on-dark);
-  font-family: "DotGothic16", monospace;
+  /* 座標が桁で揺れないよう HUD は等幅にする */
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
   font-size: 1rem;
   pointer-events: none; /* Let clicks pass through */
   z-index: 101;
@@ -850,9 +851,9 @@ onBeforeUnmount(() => {
 
 .loading-text,
 .error-text {
-  font-family: "DotGothic16", monospace;
+  font-family: var(--font-latin);
   font-size: 0.9rem;
-  color: var(--color-primary);
+  color: var(--color-primary-text);
 }
 
 .error-text {
