@@ -34,9 +34,13 @@
 
               <p class="topaz-meta">
                 <span class="topaz-date">{{ project.yearMonth }}</span>
-                <span v-if="project.hackathon" class="topaz-hackathon">
+                <span v-if="project.hackathonName" class="topaz-hackathon">
+                  <IconFlag :size="14" :stroke="2" aria-hidden="true" />
+                  {{ project.hackathonName }}
+                </span>
+                <span v-if="project.award" class="topaz-award">
                   <IconTrophy :size="14" :stroke="2" aria-hidden="true" />
-                  {{ project.hackathon.name }}
+                  {{ project.award }}
                 </span>
               </p>
 
@@ -68,10 +72,11 @@
 
 <script setup>
 import { computed } from "vue";
-import { IconArrowUpRight, IconExternalLink, IconTrophy } from "@tabler/icons-vue";
+import { IconArrowUpRight, IconExternalLink, IconFlag, IconTrophy } from "@tabler/icons-vue";
 import SectionHeading from "../SectionHeading.vue";
 import topaz from "../../data/topaz.json";
 import { featuredTopazIds } from "../../data/topazFeatured.js";
+import { topazOverrides } from "../../data/topazOverrides.js";
 import { convertWithTechIcons } from "../../utils/techIcons.js";
 
 /*
@@ -92,9 +97,14 @@ const featured = computed(() => {
       return [];
     }
 
+    // Topa'z 側に登録のないハッカソン名・受賞は、手書きの topazOverrides で補う (あればそちらが優先)
+    const override = topazOverrides[id] ?? {};
+
     return [
       {
         ...project,
+        hackathonName: override.hackathon || project.hackathon?.name || "",
+        award: override.award || "",
         // createdAt は UTC の ISO 文字列。年月しか出さないので Date を経由せず先頭を切り出す
         yearMonth: project.createdAt.slice(0, 7).replace("-", "."),
         technologies: project.technologies.map(convertWithTechIcons),
@@ -253,11 +263,15 @@ const featured = computed(() => {
   line-height: 1.35;
 }
 
+/*
+ * 年月・カップ名・賞は 1 行ずつ縦に積む。
+ * 横並びで折り返させると、名前の長さ次第でカードごとに行の割れ方が変わって揃わない
+ */
 .topaz-meta {
   display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.5rem;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
   line-height: 1.4;
 }
 
@@ -280,6 +294,20 @@ const featured = computed(() => {
   padding: 0.15rem 0.55rem;
   border-radius: 999px;
   background: var(--color-primary);
+  color: var(--color-ink);
+  border: 2px solid var(--color-ink);
+}
+
+/* 受賞はハッカソン名より目立たせたいので、ネオン側の面にする (--color-ink on --color-neon = 12.82:1) */
+.topaz-award {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--color-neon);
   color: var(--color-ink);
   border: 2px solid var(--color-ink);
 }
