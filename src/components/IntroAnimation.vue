@@ -200,7 +200,7 @@ onBeforeUnmount(() => {
   left: 0;
   width: 100vw;
   height: 100vh;
-  background: white;
+  background: var(--color-intro-bg);
   z-index: 9999;
   overflow: hidden;
 }
@@ -215,14 +215,14 @@ onBeforeUnmount(() => {
 
 .line-path {
   fill: none;
-  stroke: #3a6b3a;
+  stroke: var(--color-intro-line);
   stroke-width: 2;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
 
 .line-tip {
-  fill: #7db87d;
+  fill: var(--color-primary);
 }
 
 /* Vue Transition styles */

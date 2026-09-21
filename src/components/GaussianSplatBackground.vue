@@ -802,11 +802,11 @@ onBeforeUnmount(() => {
   position: absolute;
   bottom: 20px;
   right: 20px;
-  background: rgba(0, 0, 0, 0.7);
+  background: rgb(var(--color-shadow-rgb) / 0.7);
   padding: 15px;
   border-radius: 8px;
-  border: 1px solid #7db87d;
-  color: #a8e6a3;
+  border: 1px solid var(--color-primary);
+  color: var(--color-text-on-dark);
   font-family: "DotGothic16", monospace;
   font-size: 1rem;
   pointer-events: none; /* Let clicks pass through */
@@ -830,7 +830,7 @@ onBeforeUnmount(() => {
 .info-hint {
   margin-top: 10px;
   font-size: 0.8rem;
-  color: #e57373;
+  color: var(--color-error);
   opacity: 0.9;
 }
 
@@ -840,18 +840,18 @@ onBeforeUnmount(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #050810;
+  background: var(--color-bg-overlay);
 }
 
 .loading-text,
 .error-text {
   font-family: "DotGothic16", monospace;
   font-size: 0.9rem;
-  color: #7db87d;
+  color: var(--color-primary);
 }
 
 .error-text {
-  color: #e57373;
+  color: var(--color-error);
 }
 
 .fade-leave-active {

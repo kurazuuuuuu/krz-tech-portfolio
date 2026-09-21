@@ -88,6 +88,55 @@ export default {
 </script>
 
 <style>
+/*
+ * カラートークン。役割ベースで定義してあるので、テーマ変更はここの値だけを差し替える。
+ * アルファ違いで使う色は RGB 三つ組 (--*-rgb) として持ち、使用側でアルファを付けて参照する。
+ */
+:root {
+  /* RGB 三つ組 (アルファ違いで多用する色) */
+  --color-primary-rgb: 125 184 125;
+  --color-primary-light-rgb: 168 230 163;
+  --color-text-on-dark-rgb: 168 230 163;
+  --color-surface-panel-rgb: 10 20 15;
+  --color-surface-card-rgb: 30 60 30;
+  --color-border-light-rgb: 255 255 255;
+  --color-shadow-rgb: 0 0 0;
+
+  /* 背景 */
+  --color-bg: #111820;
+  --color-bg-overlay: #050810;
+  --color-intro-bg: #ffffff;
+
+  /* ブランドカラー (面・境界線・ドット風オフセット影に使う 4 段ランプ) */
+  --color-primary-light: rgb(var(--color-primary-light-rgb));
+  --color-primary: rgb(var(--color-primary-rgb));
+  --color-primary-hover: #6ba86b;
+  --color-primary-shadow: #5a9a5a;
+
+  /* パネル・カードの面 */
+  --color-surface-terminal: #1a3d1a;
+  --color-surface-card-hover: rgb(40 75 40 / 0.9);
+  --color-surface-interactive-hover: rgb(50 90 50 / 0.9);
+
+  /* 文字色 */
+  --color-text-strong: #2d5a2d;
+  --color-text-sub: #4a7a4a;
+  --color-text-on-dark: rgb(var(--color-text-on-dark-rgb));
+  --color-text-highlight: #c0f0c0;
+  --color-text-on-primary: #ffffff;
+  --color-text-on-primary-dark: #1a3d1a;
+
+  /* 個別パーツ */
+  --color-intro-line: #3a6b3a;
+  --color-scrollbar-track: #e8f5e8;
+
+  /* シグナル・エラー */
+  --color-signal-red: #ff5f56;
+  --color-signal-yellow: #ffbd2e;
+  --color-signal-green: #27c93f;
+  --color-error: #e57373;
+}
+
 * {
   margin: 0;
   padding: 0;
@@ -99,17 +148,17 @@ export default {
   top: 0;
   left: 0;
   height: 4px;
-  background: linear-gradient(90deg, #7db87d, #a8e6a3);
+  background: linear-gradient(90deg, var(--color-primary), var(--color-primary-light));
   z-index: 9999;
   transition: width 0.1s ease;
-  box-shadow: 0 2px 4px rgba(125, 184, 125, 0.3);
+  box-shadow: 0 2px 4px rgb(var(--color-primary-rgb) / 0.3);
 }
 
 body {
   font-family: "DotGothic16", monospace;
-  background-color: #111820;
+  background-color: var(--color-bg);
   min-height: 100vh;
-  color: #2d5a2d;
+  color: var(--color-text-strong);
   line-height: 1.4;
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
@@ -127,15 +176,15 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #e8f5e8;
+  background: var(--color-scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #7db87d;
+  background: var(--color-primary);
   border-radius: 0;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #6ba86b;
+  background: var(--color-primary-hover);
 }
 </style>
