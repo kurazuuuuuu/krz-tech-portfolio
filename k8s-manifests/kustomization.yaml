@@ -5,4 +5,4 @@ resources:
   - service.yaml
 images:
   - name: ghcr.io/kurazuuuuuu/krz-tech-portfolio
-    digest: sha256:307d06f042fdb55a7300e989c9df137ab41fa23c861fef4f3923c6c71489cab1
+    digest: sha256:7485fb32fd5acbf0b31e701680f7330eaf51623302feea828856bed921624250
