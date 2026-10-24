@@ -5,10 +5,6 @@ export const profile = {
   role: "Backend & Infrastructure Engineer",
 };
 
-/*
- * スペック表の行。1 行消せばその項目ごと表から外れる。
- * LINKS 行だけはアイコン付きリンクなので ProfileSection 側で socialLinks から組み立てる。
- */
 export const specs = [
   { label: "NAME", value: "くらず / Kurazu" },
   { label: "ROLE", value: "Backend & Infrastructure Engineer" },

@@ -13,11 +13,8 @@
 import { IconCrown } from "@tabler/icons-vue";
 
 defineProps({
-  // セクション番号 (01〜04)
   number: { type: String, required: true },
-  // Doto で見せる英見出し
   en: { type: String, required: true },
-  // 下に添える日本語の小見出し
   ja: { type: String, required: true },
 });
 </script>
@@ -61,12 +58,6 @@ defineProps({
   letter-spacing: 0.04em;
 }
 
-/*
- * Doto の可変軸を細→太・角→丸へ動かす。
- * font-variation-settings は直接補間できないので、型付きで登録した CSS 変数を
- * アニメーションさせて font-variation-settings 側で受ける。
- * 既定値は最終状態なので、reduced-motion でも太字で出る
- */
 @property --heading-wght {
   syntax: "<number>";
   inherits: false;

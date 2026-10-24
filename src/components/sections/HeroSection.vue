@@ -62,16 +62,11 @@ import { profile } from "../../data/profile.js";
 import { socialLinks } from "../../data/socialLinks.js";
 
 defineProps({
-  // イントロ (IntroAnimation) が閉じ始めたか。.is-started を付けて CSS の登場演出を走らせる
   introDone: { type: Boolean, default: false },
 });
 
 const root = ref(null);
 
-/*
- * マウス追従の視差。ポインタ座標を -0.5〜0.5 に正規化して CSS 変数へ渡すだけで、
- * 追従の滑らかさ・ホバー可否・reduced-motion の判定は CSS 側が持つ
- */
 const onPointerMove = (event) => {
   const el = root.value;
   if (!el) return;
@@ -91,18 +86,15 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   display: flex;
   flex-direction: column;
   justify-content: center;
-  /* 斜め帯・巨大タイポ・立ち絵のはみ出しで横スクロールを出さない */
   overflow: hidden;
   overflow: clip;
   padding: 5.5rem 0 3rem;
 }
 
-/* 緑の帯がインタラクティブ要素の背後に来るので、focus リングは墨色にする */
 .hero :focus-visible {
   outline-color: var(--color-ink);
 }
 
-/* 装飾 */
 .hero-deco {
   position: absolute;
   inset: 0;
@@ -143,7 +135,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   background-size: 15px 15px;
 }
 
-/* 本体 */
 .hero-inner {
   position: relative;
   z-index: 1;
@@ -151,7 +142,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   margin: 0 auto;
   padding: 0 2rem;
   display: grid;
-  /* 「KURAZU」(Doto 等幅 6 文字 = 3.66em) が 769〜1920px の全幅で収まる比率 */
   grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
   align-items: center;
   gap: 2rem;
@@ -162,11 +152,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   z-index: 1;
 }
 
-/*
- * テキスト背面のごく薄い白ベール (backdrop-filter は使わない)。
- * 斜め帯のワイプインを塗り潰さないよう、テキストの周囲だけに小さくかける。
- * 墨色の文字は緑の帯 (#4fcf72) の上でも 8:1 あるので可読性は保たれる。
- */
 .hero-copy::before {
   content: "";
   position: absolute;
@@ -193,7 +178,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   font-size: clamp(3.2rem, 12vw, 9.5rem);
   line-height: 0.88;
   letter-spacing: 0.01em;
-  /* 1 文字ずつの inline-block でも途中改行させない */
   white-space: nowrap;
   color: var(--color-ink);
   margin-bottom: 0.6rem;
@@ -211,7 +195,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   font-size: clamp(0.9rem, 2vw, 1.1rem);
   font-weight: 600;
   letter-spacing: 0.04em;
-  /* 緑の帯の上に載る可能性があるので墨色 */
   color: var(--color-ink);
   margin-top: 0.35rem;
 }
@@ -234,7 +217,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   background: var(--color-surface);
   color: var(--color-ink);
   box-shadow: 3px 3px 0 var(--color-primary);
-  /* 登場演出は親の ul 側で動くので、hover は自分の translate で当てる */
   transition:
     box-shadow 0.18s ease,
     translate 0.18s ease,
@@ -247,7 +229,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   box-shadow: 1px 1px 0 var(--color-primary-deep);
 }
 
-/* 立ち絵 */
 .hero-visual {
   position: relative;
   /* justify-self: end だと shrink-to-fit になり、img の max-width: 100% が
@@ -260,19 +241,15 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
 }
 
 .hero-sticker {
-  /* width/height 属性由来の aspect-ratio に任せる。
-     max-* だけで抑えることで、カラムが狭いときも横に潰れない */
   width: auto;
   height: auto;
   max-width: 100%;
   max-height: min(76vh, 620px);
   max-height: min(76svh, 620px);
-  /* 明るい背景で白フチが埋もれないよう、緑のオフセット影 + 薄い墨色の影 */
   filter: drop-shadow(8px 8px 0 rgb(var(--color-primary-rgb) / 0.55))
     drop-shadow(0 12px 20px rgb(var(--color-ink-rgb) / 0.18));
 }
 
-/* SCROLL */
 .scroll-cue {
   position: relative;
   z-index: 2;
@@ -317,20 +294,9 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
 }
 
 .hero-sticker {
-  /* 着地の squash & stretch は足元を支点にする */
   transform-origin: 50% 100%;
 }
 
-/*
- * 登場演出。.is-started (イントロ終了) で一斉に走らせ、順番は animation-delay で組む。
- *   0s      斜め帯がワイプイン
- *   0.35s   立ち絵が下から飛び込んで着地
- *   1.2s    着地の squash & stretch と同時に KURAZU を 1 文字ずつ
- *   1.775s  日本語名・肩書き・SNS・SCROLL
- *   2.55s〜 常時アニメ (立ち絵の浮遊・SCROLL の縦線)
- * fill は backwards だけにして、終了後に hover 用の translate などを上書きしない。
- * reduced-motion では何も隠さず、最初から最終状態のまま
- */
 @media (prefers-reduced-motion: no-preference) {
   .hero:not(.is-started) :is(.hero-char, .hero-sticker, [data-hero]) {
     opacity: 0;
@@ -410,7 +376,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   }
 }
 
-/* 1.1s で伸びきって 0.3s 待つ (= 1.4s 周期) */
 @keyframes hero-scroll-line {
   0% {
     scale: 1 0;
@@ -422,7 +387,6 @@ onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
   }
 }
 
-/* マウス追従の視差。3D 背景のパララックスと逆位相にして奥行きを出す */
 @media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
   .hero-visual {
     translate: calc(var(--px, 0) * -18px) calc(var(--py, 0) * -12px);

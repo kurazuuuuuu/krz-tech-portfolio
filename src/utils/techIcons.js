@@ -27,10 +27,8 @@ import {
   IconTopologyStar3,
 } from "@tabler/icons-vue";
 
-// "js" / "db" は他の語に埋もれやすいので、語尾を境界で見る (vue.js, nextjs, mongodb)
 const JS_PATTERN = /js\b/;
 const DB_PATTERN = /db\b/;
-// "go" は google / mongodb / django に埋もれるので、前後とも境界で見る
 const GO_PATTERN = /\bgo(lang)?\b/;
 
 export const convertWithTechIcons = (techName) => {
@@ -48,7 +46,6 @@ export const convertWithTechIcons = (techName) => {
     icon = IconBrandPython;
   } else if (lowerName.includes("typescript")) {
     icon = IconBrandTypescript;
-    // "node.js" は JS_PATTERN にも当たるので、先に Node として拾う
   } else if (lowerName.includes("node")) {
     icon = IconBrandNodejs;
   } else if (lowerName.includes("javascript") || JS_PATTERN.test(lowerName)) {
@@ -102,7 +99,7 @@ export const convertWithTechIcons = (techName) => {
   ) {
     icon = IconDatabase;
   } else {
-    icon = IconCode; // Default icon
+    icon = IconCode;
   }
 
   return {

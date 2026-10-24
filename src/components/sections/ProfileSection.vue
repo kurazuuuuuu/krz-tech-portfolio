@@ -78,16 +78,12 @@ import { socialLinks } from "../../data/socialLinks.js";
 .profile-figure {
   display: flex;
   justify-content: center;
-  /* 立ち絵は横からスライドイン */
   --reveal-x: -60px;
   --reveal-y: 0;
   --reveal-duration: 0.8s;
 }
 
 .profile-sticker {
-  /* width/height 属性由来の aspect-ratio に任せる。
-     max-* だけで抑えることで、カラムが狭いときも横に潰れない。
-     元画像が 428x1159 と解像度が低いので拡大しすぎない */
   width: auto;
   height: auto;
   max-width: 100%;
@@ -97,7 +93,6 @@ import { socialLinks } from "../../data/socialLinks.js";
     drop-shadow(0 12px 20px rgb(var(--color-ink-rgb) / 0.18));
 }
 
-/* スペック表 */
 .spec {
   background: var(--color-surface);
   border: 2px solid var(--color-ink);
@@ -112,7 +107,6 @@ import { socialLinks } from "../../data/socialLinks.js";
   gap: 1rem;
   padding: 0.85rem 0;
   border-bottom: 1px dashed rgb(var(--color-ink-rgb) / 0.18);
-  /* スペック表は上から順に、小さめの動きで */
   --reveal-y: 18px;
   --reveal-duration: 0.5s;
   --reveal-stagger: 70ms;

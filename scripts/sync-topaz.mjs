@@ -1,13 +1,5 @@
 /*
- * Topa'z (https://topaz.dev) の掲載作品を取り込むスナップショット生成スクリプト。
- *
  * Topa'z の API は CORS ヘッダーを返さないのでブラウザからは叩けない。
- * そのため、ここで取得した結果をリポジトリに同梱し、表示側はそれを import する。
- * 作品を追加・更新したら手で `pnpm run sync:topaz` を回して、生成物ごとコミットする。
- *
- * 生成物:
- * - src/data/topaz.json       … 表示に必要な最小限のメタデータ
- * - public/img/topaz/<id>.webp … サムネイル (長辺 960px 以内に縮小した webp)
  */
 import { execFile } from "node:child_process";
 import { mkdir, readdir, rm, writeFile } from "node:fs/promises";
@@ -24,7 +16,6 @@ const PROFILE_URL = `https://topaz.dev/${USER_NAME}`;
 const PROJECT_URL_BASE = "https://topaz.dev/projects";
 const ASSET_URL_BASE = "https://ptera-publish.topaz.dev";
 
-// サムネイルはカード内で 16:9 にトリミングして出すだけなので、長辺はこれで足りる
 const MAX_EDGE = 960;
 const WEBP_QUALITY = 80;
 
@@ -54,7 +45,6 @@ async function fetchBuffer(url) {
   return Buffer.from(await response.arrayBuffer());
 }
 
-/** API のレスポンスが想定の形かを確かめる。壊れた入力で既存の生成物を上書きしないための番人 */
 function validate(payload) {
   if (!payload || typeof payload !== "object") {
     throw new Error("レスポンスが JSON オブジェクトではありません");
@@ -68,7 +58,6 @@ function validate(payload) {
     if (typeof project?.id !== "string" || !project.id) {
       throw new Error(`${where}.id が文字列ではありません`);
     }
-    // ファイル名に使うので、想定外の文字が混ざっていたら止める
     if (!/^[\w-]+$/.test(project.id)) {
       throw new Error(`${where}.id (${project.id}) に想定外の文字が含まれています`);
     }
@@ -93,7 +82,6 @@ function validate(payload) {
 
 async function buildThumbnail(project) {
   const source = await fetchBuffer(`${ASSET_URL_BASE}/${project.thumbnail_path}`);
-  // fit: "inside" で縦長でも長辺を抑える。withoutEnlargement で元より小さい画像は拡大しない
   const pipeline = sharp(source)
     .resize({ width: MAX_EDGE, height: MAX_EDGE, fit: "inside", withoutEnlargement: true })
     .webp({ quality: WEBP_QUALITY });
@@ -105,7 +93,6 @@ async function main() {
   const payload = await fetchJson(API_URL);
   const rawProjects = validate(payload);
 
-  // 新しい順。API の並びに依存しないよう created_at で明示的に並べ替える
   const sorted = [...rawProjects].sort(
     (a, b) => Date.parse(b.created_at) - Date.parse(a.created_at),
   );
@@ -129,7 +116,6 @@ async function main() {
     };
   });
 
-  // ここまで全部成功したので、生成物を書き出す
   await mkdir(IMAGE_DIR, { recursive: true });
   const keep = new Set(projects.map((project) => `${project.id}.webp`));
   const existing = await readdir(IMAGE_DIR).catch(() => []);

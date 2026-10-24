@@ -22,7 +22,6 @@
                 decoding="async"
                 class="topaz-thumb"
               />
-              <!-- 行き先はリンクの aria-label で伝えているので、帯は装飾として読ませない -->
               <span class="topaz-band" aria-hidden="true">
                 VIEW ON TOPA'Z
                 <IconArrowUpRight :size="16" :stroke="2.4" />
@@ -75,38 +74,46 @@ import { computed } from "vue";
 import { IconArrowUpRight, IconExternalLink, IconFlag, IconTrophy } from "@tabler/icons-vue";
 import SectionHeading from "../SectionHeading.vue";
 import topaz from "../../data/topaz.json";
-import { featuredTopazIds } from "../../data/topazFeatured.js";
+import { featuredTopazTitles } from "../../data/topazFeatured.js";
 import { topazOverrides } from "../../data/topazOverrides.js";
 import { convertWithTechIcons } from "../../utils/techIcons.js";
 
 /*
  * Topa'z の API は CORS ヘッダーを返さないのでブラウザからは叩けない。
- * `pnpm run sync:topaz` が作ったスナップショット (topaz.json) から、
- * featuredTopazIds の並び順で代表作だけを取り出す。
  */
-const featured = computed(() => {
-  const byId = new Map(topaz.projects.map((project) => [project.id, project]));
+const yearMonthFormat = new Intl.DateTimeFormat("ja-JP", {
+  timeZone: "Asia/Tokyo",
+  year: "numeric",
+  month: "2-digit",
+});
 
-  return featuredTopazIds.flatMap((id) => {
-    const project = byId.get(id);
+const toYearMonth = (iso) => {
+  const parts = Object.fromEntries(
+    yearMonthFormat.formatToParts(new Date(iso)).map(({ type, value }) => [type, value]),
+  );
+  return `${parts.year}.${parts.month}`;
+};
+
+const featured = computed(() => {
+  const byTitle = new Map(topaz.projects.map((project) => [project.title, project]));
+
+  return featuredTopazTitles.flatMap((title) => {
+    const project = byTitle.get(title);
     if (!project) {
-      // スナップショットを更新したら消えていた ID。表示は黙って落とす
       if (import.meta.env.DEV) {
-        console.warn(`[TopazSection] topaz.json に ID ${id} の作品がありません`);
+        console.warn(`[TopazSection] topaz.json に「${title}」の作品がありません`);
       }
       return [];
     }
 
-    // Topa'z 側に登録のないハッカソン名・受賞は、手書きの topazOverrides で補う (あればそちらが優先)
-    const override = topazOverrides[id] ?? {};
+    const override = topazOverrides[title] ?? {};
 
     return [
       {
         ...project,
         hackathonName: override.hackathon || project.hackathon?.name || "",
         award: override.award || "",
-        // createdAt は UTC の ISO 文字列。年月しか出さないので Date を経由せず先頭を切り出す
-        yearMonth: project.createdAt.slice(0, 7).replace("-", "."),
+        yearMonth: toYearMonth(project.createdAt),
         technologies: project.technologies.map(convertWithTechIcons),
       },
     ];
@@ -119,9 +126,7 @@ const featured = computed(() => {
   position: relative;
   overflow: hidden;
   overflow: clip;
-  /* WORKS (ミント) と CONTACT (ミント) に挟まれる白い面。交互のリズムを保つ */
   background: rgb(var(--color-surface-rgb) / 0.94);
-  /* 前のセクションと --deco-angle の平行な切れ目をあけ、そこから 3D 背景が覗く */
   margin-top: calc(28px - var(--section-cut));
   padding: calc(var(--section-cut) + 3rem) 0 calc(var(--section-cut) + 3rem);
   clip-path: polygon(0 var(--section-cut), 100% 0, 100% calc(100% - var(--section-cut)), 0 100%);
@@ -151,7 +156,6 @@ const featured = computed(() => {
   border: 2px solid var(--color-ink);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  /* リビールは transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
   transition:
     box-shadow 0.18s ease,
     translate 0.18s ease;
@@ -167,15 +171,9 @@ const featured = computed(() => {
   outline-offset: 3px;
 }
 
-/*
- * サムネイルの枠。ズームと帯はこの枠の overflow で閉じ込める。
- * 下辺の境界線と背景は枠側に持たせてあるので、中の画像が拡大しても欠けない。
- * (角丸は .topaz-card の overflow: hidden 側で保たれる)
- */
 .topaz-media {
   position: relative;
   overflow: hidden;
-  /* 元のサムネイルは比率がバラバラなので、カード側で 16:9 に揃える */
   aspect-ratio: 16 / 9;
   background: var(--color-surface-mint);
   border-bottom: 2px solid var(--color-ink);
@@ -185,18 +183,11 @@ const featured = computed(() => {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  /*
-   * リビールは data-reveal を付けた .topaz-item 側の transform をアニメーションさせ、
-   * 完了後は何も残さない。ホバー演出は子要素に、かつ
-   * transform ではなく個別プロパティ (scale / translate / rotate) で当てて衝突を避ける
-   */
   transition: scale 0.5s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-/* 斜め帯。非ホバー時は枠の左下の外に退避していて、サムネイルを隠さない */
 .topaz-band {
   position: absolute;
-  /* 回転しても枠の横幅を渡りきるよう、左右にはみ出させておく */
   left: -20%;
   right: -20%;
   bottom: 16%;
@@ -206,7 +197,6 @@ const featured = computed(() => {
   gap: 0.4rem;
   padding: 0.3rem 1rem;
   background: var(--color-primary);
-  /* --color-ink on --color-primary = 8.06:1 */
   color: var(--color-ink);
   border-top: 2px solid var(--color-ink);
   border-bottom: 2px solid var(--color-ink);
@@ -217,7 +207,6 @@ const featured = computed(() => {
   font-size: 0.82rem;
   letter-spacing: 0.14em;
   line-height: 1.4;
-  /* サイト共通の斜めモチーフ (セクションの切れ目・スピード線) と角度を揃える */
   rotate: var(--deco-angle);
   translate: -30% 340%;
   opacity: 0;
@@ -238,7 +227,6 @@ const featured = computed(() => {
   }
 }
 
-/* キーボード操作でも同じ見た目にする。こちらはポインタの有無によらず効かせる */
 .topaz-card:focus-visible .topaz-thumb {
   scale: 1.08;
 }
@@ -249,7 +237,6 @@ const featured = computed(() => {
 }
 
 .topaz-body {
-  /* カードの余白を本文側で吸わせて、タグ (margin-top: auto) を下端に揃える */
   flex: 1;
   display: flex;
   flex-direction: column;
@@ -263,10 +250,6 @@ const featured = computed(() => {
   line-height: 1.35;
 }
 
-/*
- * 年月・カップ名・賞は 1 行ずつ縦に積む。
- * 横並びで折り返させると、名前の長さ次第でカードごとに行の割れ方が変わって揃わない
- */
 .topaz-meta {
   display: flex;
   flex-direction: column;
@@ -298,7 +281,6 @@ const featured = computed(() => {
   border: 2px solid var(--color-ink);
 }
 
-/* 受賞はハッカソン名より目立たせたいので、ネオン側の面にする (--color-ink on --color-neon = 12.82:1) */
 .topaz-award {
   display: inline-flex;
   align-items: center;
@@ -381,10 +363,6 @@ const featured = computed(() => {
   }
 }
 
-/*
- * reduced-motion ではズームとスライドをやめ、帯はその場でフェードするだけにする。
- * 上のホバー指定と同じ詳細度なので、必ず後ろに置いて上書きさせる
- */
 @media (prefers-reduced-motion: reduce) {
   .topaz-thumb {
     transition: none;

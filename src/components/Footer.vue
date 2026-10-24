@@ -41,7 +41,6 @@ const year = new Date().getFullYear();
   clip-path: polygon(0 var(--section-cut), 100% 0, 100% 100%, 0 100%);
 }
 
-/* ビビッドグリーンの面の上では、既定の深い緑の focus リングが 2.07:1 しかない */
 .footer :focus-visible {
   outline-color: var(--color-ink);
 }

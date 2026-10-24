@@ -38,7 +38,6 @@ import { socialLinks } from "../../data/socialLinks.js";
   position: relative;
   overflow: hidden;
   overflow: clip;
-  /* TOPA'Z (白) が間に入ったぶん、ミント/白の交互を保つためにこちらをミントへ */
   background: rgb(var(--color-mint-rgb) / 0.92);
   margin-top: calc(28px - var(--section-cut));
   padding: calc(var(--section-cut) + 3rem) 0 calc(var(--section-cut) + 4rem);
@@ -78,7 +77,6 @@ import { socialLinks } from "../../data/socialLinks.js";
   border: 2px solid var(--color-ink);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  /* リビールは transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
   transition:
     box-shadow 0.18s ease,
     translate 0.18s ease,
