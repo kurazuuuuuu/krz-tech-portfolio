@@ -10,8 +10,8 @@
 </template>
 
 <script setup>
-import { nextTick, onMounted, reactive, ref } from "vue";
-import { useScrollReveal } from "../composables/useGsap.js";
+import { onMounted, reactive, ref } from "vue";
+import { useScrollReveal } from "../composables/useScrollReveal.js";
 import { projects as projectsData } from "../data/projects.js";
 import HeroSection from "./sections/HeroSection.vue";
 import ProfileSection from "./sections/ProfileSection.vue";
@@ -62,16 +62,11 @@ const root = ref(null);
 
 // 各セクションのスクロールリビール ([data-reveal])。
 // イントロのオーバーレイが開いている間は隠したまま待たせて、裏でリビールが終わるのを防ぐ
-const { refresh: refreshReveal } = useScrollReveal(root, {
+useScrollReveal(root, {
   enabled: () => props.introDone,
 });
 
-onMounted(async () => {
-  await updateProjectDescriptions();
-  // description が伸びるとカードの高さが変わり、下のトリガ位置がずれる
-  await nextTick();
-  refreshReveal();
-});
+onMounted(updateProjectDescriptions);
 </script>
 
 <style scoped>

@@ -14,10 +14,10 @@
           <IconBrandGithub :size="20" :stroke="2" />
         </a>
 
-        <button type="button" class="to-top" @click="scrollToSection('hero')">
+        <a href="#hero" class="to-top">
           <IconCrown :size="18" :stroke="2.2" aria-hidden="true" />
           TOP
-        </button>
+        </a>
       </div>
     </div>
   </footer>
@@ -25,7 +25,6 @@
 
 <script setup>
 import { IconBrandGithub, IconCrown } from "@tabler/icons-vue";
-import { scrollToSection } from "../utils/scrollToSection.js";
 
 const year = new Date().getFullYear();
 </script>

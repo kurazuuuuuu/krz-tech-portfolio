@@ -1,10 +1,10 @@
 <template>
-  <section id="profile" ref="root" class="profile">
+  <section id="profile" class="profile">
     <div class="container">
       <SectionHeading number="01" en="PROFILE" ja="プロフィール" />
 
       <div class="profile-body">
-        <div ref="figure" class="profile-figure">
+        <div data-reveal class="profile-figure">
           <img
             src="/img/krz-top-sticker-1.png"
             width="428"
@@ -17,12 +17,12 @@
         </div>
 
         <div class="profile-main">
-          <dl ref="specList" class="spec">
-            <div v-for="spec in specs" :key="spec.label" data-spec-row class="spec-row">
+          <dl class="spec">
+            <div v-for="spec in specs" :key="spec.label" data-reveal="spec" class="spec-row">
               <dt>{{ spec.label }}</dt>
               <dd>{{ spec.value }}</dd>
             </div>
-            <div data-spec-row class="spec-row">
+            <div data-reveal="spec" class="spec-row">
               <dt>LINKS</dt>
               <dd>
                 <ul class="spec-links">
@@ -47,50 +47,9 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
 import SectionHeading from "../SectionHeading.vue";
-import { gsap, useGsap } from "../../composables/useGsap.js";
 import { introductionLines, specs } from "../../data/profile.js";
 import { socialLinks } from "../../data/socialLinks.js";
-
-const root = ref(null);
-const figure = ref(null);
-const specList = ref(null);
-
-const { add } = useGsap(root);
-
-add(({ reduceMotion }) => {
-  // reduced-motion では何も隠さない。要素は最初から最終状態のまま
-  if (reduceMotion) return undefined;
-
-  const clearProps = "transform,opacity,visibility";
-
-  // 立ち絵は横からスライドイン
-  gsap.set(figure.value, { autoAlpha: 0, x: -60 });
-  gsap.to(figure.value, {
-    autoAlpha: 1,
-    x: 0,
-    duration: 0.8,
-    ease: "power3.out",
-    clearProps,
-    scrollTrigger: { trigger: figure.value, start: "clamp(top 85%)", once: true },
-  });
-
-  // スペック表は上から順に
-  const rows = gsap.utils.toArray("[data-spec-row]", root.value);
-  gsap.set(rows, { autoAlpha: 0, y: 18 });
-  gsap.to(rows, {
-    autoAlpha: 1,
-    y: 0,
-    duration: 0.5,
-    ease: "power2.out",
-    stagger: 0.07,
-    clearProps,
-    scrollTrigger: { trigger: specList.value, start: "clamp(top 85%)", once: true },
-  });
-
-  return undefined;
-});
 </script>
 
 <style scoped>
@@ -119,7 +78,10 @@ add(({ reduceMotion }) => {
 .profile-figure {
   display: flex;
   justify-content: center;
-  will-change: transform;
+  /* 立ち絵は横からスライドイン */
+  --reveal-x: -60px;
+  --reveal-y: 0;
+  --reveal-duration: 0.8s;
 }
 
 .profile-sticker {
@@ -150,6 +112,10 @@ add(({ reduceMotion }) => {
   gap: 1rem;
   padding: 0.85rem 0;
   border-bottom: 1px dashed rgb(var(--color-ink-rgb) / 0.18);
+  /* スペック表は上から順に、小さめの動きで */
+  --reveal-y: 18px;
+  --reveal-duration: 0.5s;
+  --reveal-stagger: 70ms;
 }
 
 .spec-row:last-child {

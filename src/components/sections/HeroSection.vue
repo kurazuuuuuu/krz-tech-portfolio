@@ -1,18 +1,26 @@
 <template>
-  <section id="hero" ref="root" class="hero">
+  <section id="hero" ref="root" class="hero" :class="{ 'is-started': introDone }">
     <div class="hero-deco" aria-hidden="true">
-      <div ref="bandWrap" class="hero-band-wrap">
-        <div class="hero-band"><i ref="bandFill" class="hero-band-fill"></i></div>
+      <div class="hero-band-wrap">
+        <div class="hero-band"><i class="hero-band-fill"></i></div>
       </div>
       <div class="hero-dots"></div>
     </div>
 
     <div class="hero-inner">
       <div class="hero-copy">
-        <h1 ref="titleEl" class="hero-title">{{ profile.nameLatin }}</h1>
-        <p data-hero class="hero-name-ja">{{ profile.nameJa }}</p>
-        <p data-hero class="hero-role">{{ profile.role }}</p>
-        <ul data-hero class="hero-socials">
+        <h1 class="hero-title" :aria-label="profile.nameLatin">
+          <span
+            v-for="(char, i) in profile.nameLatin"
+            :key="i"
+            class="hero-char"
+            aria-hidden="true"
+            >{{ char }}</span
+          >
+        </h1>
+        <p data-hero class="hero-name-ja" style="--hero-i: 0">{{ profile.nameJa }}</p>
+        <p data-hero class="hero-role" style="--hero-i: 1">{{ profile.role }}</p>
+        <ul data-hero class="hero-socials" style="--hero-i: 2">
           <li v-for="link in socialLinks" :key="link.name">
             <a
               :href="link.url"
@@ -27,9 +35,8 @@
         </ul>
       </div>
 
-      <div ref="visual" class="hero-visual">
+      <div class="hero-visual">
         <img
-          ref="sticker"
           src="/img/krz-top-sticker-2.png"
           width="955"
           height="1256"
@@ -42,194 +49,38 @@
       </div>
     </div>
 
-    <button type="button" data-hero class="scroll-cue" @click="scrollToSection('profile')">
+    <a href="#profile" data-hero class="scroll-cue" style="--hero-i: 3">
       <span class="scroll-cue-label">SCROLL</span>
-      <span class="scroll-cue-line" aria-hidden="true"><i ref="scrollLine"></i></span>
-    </button>
+      <span class="scroll-cue-line" aria-hidden="true"><i></i></span>
+    </a>
   </section>
 </template>
 
 <script setup>
-import { onMounted, ref, watch } from "vue";
-import { gsap, SplitText, useGsap } from "../../composables/useGsap.js";
-import { scrollToSection } from "../../utils/scrollToSection.js";
+import { onBeforeUnmount, onMounted, ref } from "vue";
 import { profile } from "../../data/profile.js";
 import { socialLinks } from "../../data/socialLinks.js";
 
-const props = defineProps({
-  // イントロ (IntroAnimation) が閉じ始めたか。登場タイムラインはこれを合図に走る
+defineProps({
+  // イントロ (IntroAnimation) が閉じ始めたか。.is-started を付けて CSS の登場演出を走らせる
   introDone: { type: Boolean, default: false },
 });
 
 const root = ref(null);
-const bandWrap = ref(null);
-const bandFill = ref(null);
-const titleEl = ref(null);
-const visual = ref(null);
-const sticker = ref(null);
-const scrollLine = ref(null);
-
-const { add } = useGsap(root);
-
-// SplitText は Web フォント読み込み後に分割しないと文字幅がずれる。
-// ただしフォント配信がハングしても先へ進めるよう 1.5 秒で打ち切る
-const FONT_TIMEOUT_MS = 1500;
-
-const waitForDisplayFont = () => {
-  const loading = document.fonts?.load?.("900 1em Doto") ?? Promise.resolve();
-  return Promise.race([
-    Promise.resolve(loading).catch(() => {}),
-    new Promise((resolve) => setTimeout(resolve, FONT_TIMEOUT_MS)),
-  ]);
-};
-
-const fontsReady = ref(false);
-let startHero = null;
-// タイムラインが途中で落ちても要素が隠れたままにならないようにするフェイルセーフ
-let showFinalState = null;
-let started = false;
-
-const tryStart = () => {
-  if (started || !startHero || !props.introDone || !fontsReady.value) return;
-  started = true;
-  try {
-    startHero();
-  } catch (error) {
-    console.warn("Hero timeline failed, falling back to final state:", error);
-    showFinalState?.();
-  }
-};
-
-onMounted(async () => {
-  await waitForDisplayFont();
-  fontsReady.value = true;
-  tryStart();
-});
-
-watch(() => props.introDone, tryStart);
-
-add(({ reduceMotion, contextSafe }) => {
-  // reduced-motion では何も隠さない。要素は最初から最終状態のまま
-  if (reduceMotion) return undefined;
-
-  const items = gsap.utils.toArray("[data-hero]", root.value);
-  const hidden = [titleEl.value, bandFill.value, sticker.value, ...items];
-
-  gsap.set(items, { autoAlpha: 0, y: 24 });
-  gsap.set(titleEl.value, { autoAlpha: 0 });
-  gsap.set(bandFill.value, { scaleX: 0 });
-  gsap.set(sticker.value, { autoAlpha: 0, yPercent: 26 });
-
-  let split = null;
-
-  showFinalState = contextSafe(() => {
-    split?.revert();
-    split = null;
-    gsap.set(hidden, { autoAlpha: 1, clearProps: "transform,opacity,visibility" });
-  });
-
-  // 常時アニメ: 立ち絵のゆるい浮遊と SCROLL の縦線
-  const startAmbient = contextSafe(() => {
-    gsap.to(sticker.value, {
-      y: -14,
-      duration: 3.4,
-      ease: "sine.inOut",
-      yoyo: true,
-      repeat: -1,
-    });
-    gsap.fromTo(
-      scrollLine.value,
-      { scaleY: 0, transformOrigin: "50% 0%" },
-      { scaleY: 1, duration: 1.1, ease: "power2.inOut", repeat: -1, repeatDelay: 0.3 },
-    );
-  });
-
-  startHero = contextSafe(() => {
-    // smartWrap: chars だけの分割で単語が途中改行するのを防ぐ
-    split = SplitText.create(titleEl.value, { type: "chars", aria: "auto", smartWrap: true });
-
-    gsap
-      .timeline()
-      // 斜め帯がワイプイン
-      .to(bandFill.value, { scaleX: 1, duration: 0.75, ease: "power3.inOut" })
-      // 立ち絵が下から飛び込んで着地
-      .to(
-        sticker.value,
-        { autoAlpha: 1, yPercent: 0, duration: 0.85, ease: "back.out(1.5)" },
-        "-=0.4",
-      )
-      // 着地の squash & stretch
-      .to(sticker.value, {
-        scaleX: 1.05,
-        scaleY: 0.93,
-        duration: 0.11,
-        ease: "power2.out",
-        transformOrigin: "50% 100%",
-        yoyo: true,
-        repeat: 1,
-      })
-      .set(titleEl.value, { autoAlpha: 1 }, "<")
-      // KURAZU を 1 文字ずつ
-      .from(
-        split.chars,
-        {
-          yPercent: 115,
-          rotate: -10,
-          autoAlpha: 0,
-          duration: 0.6,
-          ease: "back.out(2)",
-          stagger: 0.045,
-        },
-        "<",
-      )
-      // 日本語名・肩書き・SNS・SCROLL
-      .to(items, { autoAlpha: 1, y: 0, duration: 0.5, ease: "power2.out", stagger: 0.09 }, "-=0.25")
-      .add(startAmbient);
-  });
-
-  tryStart();
-
-  return () => {
-    split?.revert();
-    split = null;
-    startHero = null;
-    showFinalState = null;
-    started = false;
-  };
-});
 
 /*
- * マウス追従の視差だけは別の matchMedia に分ける。
- * 登場タイムラインと同じ条件セットに載せると、ホバー可否が変わったとき
- * (iPad にトラックパッド接続、DevTools のデバイス切替) に builder ごと revert され、
- * 表示済みのヒーローが消えて登場演出からやり直しになってしまう。
+ * マウス追従の視差。ポインタ座標を -0.5〜0.5 に正規化して CSS 変数へ渡すだけで、
+ * 追従の滑らかさ・ホバー可否・reduced-motion の判定は CSS 側が持つ
  */
-const { add: addParallax } = useGsap(root, {
-  conditions: { canHover: "(hover: hover) and (pointer: fine)" },
-});
+const onPointerMove = (event) => {
+  const el = root.value;
+  if (!el) return;
+  el.style.setProperty("--px", (event.clientX / window.innerWidth - 0.5).toFixed(3));
+  el.style.setProperty("--py", (event.clientY / window.innerHeight - 0.5).toFixed(3));
+};
 
-addParallax(({ reduceMotion, conditions }) => {
-  if (reduceMotion || !conditions.canHover) return undefined;
-
-  const visualX = gsap.quickTo(visual.value, "x", { duration: 0.6, ease: "power3" });
-  const visualY = gsap.quickTo(visual.value, "y", { duration: 0.6, ease: "power3" });
-  const bandX = gsap.quickTo(bandWrap.value, "x", { duration: 0.9, ease: "power3" });
-  const bandY = gsap.quickTo(bandWrap.value, "y", { duration: 0.9, ease: "power3" });
-
-  const onPointerMove = (event) => {
-    const nx = event.clientX / window.innerWidth - 0.5;
-    const ny = event.clientY / window.innerHeight - 0.5;
-    // 3D 背景のパララックスと逆位相にして奥行きを出す
-    visualX(nx * -18);
-    visualY(ny * -12);
-    bandX(nx * 10);
-    bandY(ny * 7);
-  };
-
-  window.addEventListener("pointermove", onPointerMove, { passive: true });
-
-  return () => window.removeEventListener("pointermove", onPointerMove);
-});
+onMounted(() => window.addEventListener("pointermove", onPointerMove, { passive: true }));
+onBeforeUnmount(() => window.removeEventListener("pointermove", onPointerMove));
 </script>
 
 <style scoped>
@@ -262,7 +113,7 @@ addParallax(({ reduceMotion, conditions }) => {
 .hero-band-wrap {
   position: absolute;
   inset: 0;
-  will-change: transform;
+  will-change: translate;
 }
 
 .hero-band {
@@ -342,7 +193,7 @@ addParallax(({ reduceMotion, conditions }) => {
   font-size: clamp(3.2rem, 12vw, 9.5rem);
   line-height: 0.88;
   letter-spacing: 0.01em;
-  /* SplitText の chars が裸の inline-block になっても途中改行させない */
+  /* 1 文字ずつの inline-block でも途中改行させない */
   white-space: nowrap;
   color: var(--color-ink);
   margin-bottom: 0.6rem;
@@ -383,7 +234,7 @@ addParallax(({ reduceMotion, conditions }) => {
   background: var(--color-surface);
   color: var(--color-ink);
   box-shadow: 3px 3px 0 var(--color-primary);
-  /* GSAP は transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
+  /* 登場演出は親の ul 側で動くので、hover は自分の translate で当てる */
   transition:
     box-shadow 0.18s ease,
     translate 0.18s ease,
@@ -405,7 +256,7 @@ addParallax(({ reduceMotion, conditions }) => {
   justify-content: flex-end;
   width: 100%;
   min-width: 0;
-  will-change: transform;
+  will-change: translate;
 }
 
 .hero-sticker {
@@ -430,11 +281,10 @@ addParallax(({ reduceMotion, conditions }) => {
   flex-direction: column;
   align-items: center;
   gap: 0.55rem;
+  width: fit-content;
   padding: 0.5rem 1rem;
-  background: none;
-  border: 0;
-  cursor: pointer;
   color: var(--color-ink);
+  text-decoration: none;
 }
 
 .scroll-cue-label {
@@ -460,6 +310,129 @@ addParallax(({ reduceMotion, conditions }) => {
   height: 100%;
   background: var(--color-ink);
   transform-origin: 50% 0%;
+}
+
+.hero-char {
+  display: inline-block;
+}
+
+.hero-sticker {
+  /* 着地の squash & stretch は足元を支点にする */
+  transform-origin: 50% 100%;
+}
+
+/*
+ * 登場演出。.is-started (イントロ終了) で一斉に走らせ、順番は animation-delay で組む。
+ *   0s      斜め帯がワイプイン
+ *   0.35s   立ち絵が下から飛び込んで着地
+ *   1.2s    着地の squash & stretch と同時に KURAZU を 1 文字ずつ
+ *   1.775s  日本語名・肩書き・SNS・SCROLL
+ *   2.55s〜 常時アニメ (立ち絵の浮遊・SCROLL の縦線)
+ * fill は backwards だけにして、終了後に hover 用の translate などを上書きしない。
+ * reduced-motion では何も隠さず、最初から最終状態のまま
+ */
+@media (prefers-reduced-motion: no-preference) {
+  .hero:not(.is-started) :is(.hero-char, .hero-sticker, [data-hero]) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  .hero:not(.is-started) .hero-band-fill {
+    scale: 0 1;
+  }
+
+  .is-started .hero-band-fill {
+    animation: hero-band-in 0.75s cubic-bezier(0.76, 0, 0.24, 1) backwards;
+  }
+
+  .is-started .hero-sticker {
+    animation:
+      hero-sticker-in 0.85s cubic-bezier(0.34, 1.5, 0.64, 1) 0.35s backwards,
+      hero-sticker-squash 0.22s 1.2s,
+      hero-sticker-float 3.4s cubic-bezier(0.37, 0, 0.63, 1) 2.55s infinite alternate;
+  }
+
+  .is-started .hero-char {
+    animation: hero-char-in 0.6s cubic-bezier(0.34, 1.8, 0.64, 1) backwards;
+    /* sibling-index() 非対応 (Firefox・Safari 26.1 以前) では全文字が同時に出る */
+    animation-delay: 1.2s;
+    animation-delay: calc(1.2s + (sibling-index() - 1) * 45ms);
+  }
+
+  .is-started [data-hero] {
+    animation: hero-item-in 0.5s cubic-bezier(0.33, 1, 0.68, 1) backwards;
+    animation-delay: calc(1.775s + var(--hero-i, 0) * 90ms);
+  }
+
+  .is-started .scroll-cue-line i {
+    animation: hero-scroll-line 1.4s 2.55s infinite backwards;
+  }
+}
+
+@keyframes hero-band-in {
+  from {
+    scale: 0 1;
+  }
+}
+
+@keyframes hero-sticker-in {
+  from {
+    opacity: 0;
+    translate: 0 26%;
+  }
+}
+
+@keyframes hero-sticker-squash {
+  50% {
+    scale: 1.05 0.93;
+    animation-timing-function: cubic-bezier(0.33, 1, 0.68, 1);
+  }
+}
+
+@keyframes hero-sticker-float {
+  to {
+    transform: translateY(-14px);
+  }
+}
+
+@keyframes hero-char-in {
+  from {
+    opacity: 0;
+    translate: 0 115%;
+    rotate: -10deg;
+  }
+}
+
+@keyframes hero-item-in {
+  from {
+    opacity: 0;
+    translate: 0 24px;
+  }
+}
+
+/* 1.1s で伸びきって 0.3s 待つ (= 1.4s 周期) */
+@keyframes hero-scroll-line {
+  0% {
+    scale: 1 0;
+    animation-timing-function: cubic-bezier(0.65, 0, 0.35, 1);
+  }
+  78.57%,
+  100% {
+    scale: 1 1;
+  }
+}
+
+/* マウス追従の視差。3D 背景のパララックスと逆位相にして奥行きを出す */
+@media (prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) {
+  .hero-visual {
+    translate: calc(var(--px, 0) * -18px) calc(var(--py, 0) * -12px);
+    transition: translate 0.6s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .hero-band-wrap {
+    translate: calc(var(--px, 0) * 10px) calc(var(--py, 0) * 7px);
+    transition: translate 0.9s cubic-bezier(0.25, 1, 0.5, 1);
+  }
 }
 
 @media (max-width: 768px) {

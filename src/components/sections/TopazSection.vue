@@ -151,7 +151,7 @@ const featured = computed(() => {
   border: 2px solid var(--color-ink);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  /* GSAP は transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
+  /* リビールは transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
   transition:
     box-shadow 0.18s ease,
     translate 0.18s ease;
@@ -186,8 +186,8 @@ const featured = computed(() => {
   height: 100%;
   object-fit: cover;
   /*
-   * リビール (GSAP) は data-reveal を付けた .topaz-item 側の transform を触り、
-   * 完了時に clearProps でそれを消す。ホバー演出は子要素に、かつ
+   * リビールは data-reveal を付けた .topaz-item 側の transform をアニメーションさせ、
+   * 完了後は何も残さない。ホバー演出は子要素に、かつ
    * transform ではなく個別プロパティ (scale / translate / rotate) で当てて衝突を避ける
    */
   transition: scale 0.5s cubic-bezier(0.22, 1, 0.36, 1);

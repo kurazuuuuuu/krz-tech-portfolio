@@ -78,7 +78,7 @@ import { socialLinks } from "../../data/socialLinks.js";
   border: 2px solid var(--color-ink);
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
-  /* GSAP は transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
+  /* リビールは transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
   transition:
     box-shadow 0.18s ease,
     translate 0.18s ease,

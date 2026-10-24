@@ -1,6 +1,6 @@
 <template>
   <div id="app">
-    <div class="progress-bar" :style="{ width: scrollProgress + '%' }"></div>
+    <div class="progress-bar" aria-hidden="true"></div>
 
     <GaussianSplatBackground
       v-if="!useFallbackBackground"
@@ -53,19 +53,12 @@ export default {
   },
   data() {
     return {
-      scrollProgress: 0,
       backgroundLoaded: false,
       introDone: false,
       backgroundProgress: 0,
       backgroundQuality: resolveBackgroundQuality(),
       useFallbackBackground: false,
     };
-  },
-  mounted() {
-    window.addEventListener("scroll", this.updateScrollProgress);
-  },
-  beforeUnmount() {
-    window.removeEventListener("scroll", this.updateScrollProgress);
   },
   methods: {
     onBackgroundLoaded() {
@@ -76,11 +69,6 @@ export default {
     },
     onBackgroundError() {
       this.useFallbackBackground = true;
-    },
-    updateScrollProgress() {
-      const scrollTop = window.pageYOffset;
-      const docHeight = document.documentElement.scrollHeight - window.innerHeight;
-      this.scrollProgress = docHeight > 0 ? (scrollTop / docHeight) * 100 : 0;
     },
   },
 };
@@ -175,15 +163,65 @@ img {
   max-width: 100%;
 }
 
+/* ページの読み進めバー。scroll() タイムライン非対応 (Firefox) では出さない */
 .progress-bar {
-  position: fixed;
-  top: 0;
-  left: 0;
-  height: 4px;
-  background: var(--color-primary);
-  z-index: 9999;
-  transition: width 0.1s ease;
-  box-shadow: 0 1px 0 rgb(var(--color-ink-rgb) / 0.15);
+  display: none;
+}
+
+@supports (animation-timeline: scroll()) {
+  .progress-bar {
+    display: block;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: var(--color-primary);
+    z-index: 9999;
+    box-shadow: 0 1px 0 rgb(var(--color-ink-rgb) / 0.15);
+    transform-origin: 0 50%;
+    animation: progress-grow linear both;
+    animation-timeline: scroll(root);
+  }
+}
+
+@keyframes progress-grow {
+  from {
+    scale: 0 1;
+  }
+  to {
+    scale: 1 1;
+  }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /*
+   * スクロールリビール (useScrollReveal が .is-revealed を付ける)。
+   * reduced-motion では何も隠さない。要素は最初から最終状態のまま。
+   * 要素ごとに --reveal-x / --reveal-y / --reveal-duration / --reveal-stagger で上書きできる
+   */
+  [data-reveal]:not(.is-revealed) {
+    opacity: 0;
+    visibility: hidden;
+  }
+
+  [data-reveal].is-revealed {
+    /* カード側の hover は translate プロパティを使うので、こちらは transform で動かす。
+       fill は backwards だけにして、終了後に transform / opacity を残さない */
+    animation: reveal var(--reveal-duration, 0.7s) cubic-bezier(0.25, 1, 0.5, 1) backwards;
+    animation-delay: calc(var(--reveal-index, 0) * var(--reveal-stagger, 90ms));
+  }
+}
+
+@keyframes reveal {
+  from {
+    opacity: 0;
+    transform: translate(var(--reveal-x, 0), var(--reveal-y, 40px));
+  }
 }
 
 ::selection {
