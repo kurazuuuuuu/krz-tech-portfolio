@@ -1,22 +1,5 @@
-/**
- * `?debug` が付いているときだけ表示する背景の調整パネル。
- *
- * three 同梱の lil-gui を使う (新規依存なし)。このモジュール自体が
- * GaussianSplatBackground.vue から動的 import されるので、`?debug` が無い場合は
- * lil-gui もろとも本番の初期ロードに乗らない。
- *
- * 調整した値は「値をコピー」で TUNING と同じ形の JSON になる。
- * それを TUNING の既定値へ貼り戻す運用。
- */
 import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 
-/**
- * @param {object} options
- * @param {object} options.tuning  TUNING オブジェクト (コントローラが直接書き換える)
- * @param {string} options.quality 'high' | 'medium' | 'low' (線の本数はこのキーの値を編集する)
- * @param {() => void} options.apply   uniform に反映できる値が変わったとき
- * @param {() => void} options.rebuild 線のインスタンス属性に焼き込む値が変わったとき
- */
 export const createDebugPanel = ({ tuning, quality, apply, rebuild }) => {
   const gui = new GUI({ title: "背景チューニング (?debug)" });
 
@@ -64,12 +47,10 @@ export const createDebugPanel = ({ tuning, quality, apply, rebuild }) => {
 
   const background = gui.addFolder("背景 / 描画");
   background.addColor(tuning, "bgColor").name("背景色 (body と揃える)").onChange(apply);
-  // リビール完了後のフレームレート。流れる線のカクつきと GPU 負荷のトレードオフを実機で決める
   background
     .add(tuning, "idleFps", { "30fps (省電力)": 30, "60fps (滑らか)": 60 })
     .name("待機時 fps");
 
-  // TUNING と同じ形の JSON を書き出す。焼き込み直すときはこれを貼り替える
   const actions = {
     copy() {
       const json = JSON.stringify(tuning, null, 2);

@@ -9,27 +9,7 @@
   </div>
 </template>
 
-<script setup>
-import { onMounted } from "vue";
-
-const emit = defineEmits(["loaded", "progress"]);
-
-/*
- * IntroAnimation は App.vue 経由で backgroundProgress / backgroundLoaded を見て閉じる。
- * ここは読み込むアセットが無い静的な背景なので、マウント直後に完了を通知する。
- * これを出さないと isIntroStalled の 10 秒タイムアウトまでイントロが閉じ切らない。
- */
-onMounted(() => {
-  emit("progress", 100);
-  emit("loaded");
-});
-</script>
-
 <style scoped>
-/*
- * WebGL / splat の読み込みに失敗した環境向けの静的な背景。
- * three.js を立ち上げ直さず、CSS だけで 3D 版の「斜めに揃ったスピード線」を代替する。
- */
 .fallback-bg {
   position: fixed;
   inset: 0;
@@ -38,7 +18,6 @@ onMounted(() => {
   overflow: hidden;
   overflow: clip;
   background-color: var(--color-bg);
-  /* HERO のドット柄と同系統のハーフトーン */
   background-image: radial-gradient(rgb(var(--color-primary-rgb) / 0.22) 2px, transparent 2.2px);
   background-size: 18px 18px;
 }
@@ -74,7 +53,6 @@ onMounted(() => {
   background: rgb(var(--color-primary-rgb) / 0.35);
 }
 
-/* ネオンは差し色なのでごく細く */
 .stripe-4 {
   top: 63.5%;
   height: 3px;

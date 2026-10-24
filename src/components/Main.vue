@@ -21,11 +21,9 @@ import TopazSection from "./sections/TopazSection.vue";
 import ContactSection from "./sections/ContactSection.vue";
 
 const props = defineProps({
-  // イントロ (IntroAnimation) が閉じ始めたか
   introDone: { type: Boolean, default: false },
 });
 
-// GitHub API で description を上書きするので、元データを浅くコピーして reactive にする
 const projects = reactive(projectsData.map((project) => ({ ...project })));
 
 async function fetchGitHubDescription(githubUrl) {
@@ -60,8 +58,6 @@ async function updateProjectDescriptions() {
 
 const root = ref(null);
 
-// 各セクションのスクロールリビール ([data-reveal])。
-// イントロのオーバーレイが開いている間は隠したまま待たせて、裏でリビールが終わるのを防ぐ
 useScrollReveal(root, {
   enabled: () => props.introDone,
 });
@@ -72,7 +68,6 @@ onMounted(updateProjectDescriptions);
 <style scoped>
 main {
   position: relative;
-  /* 斜めカット・装飾のはみ出しで横スクロールを出さない */
   overflow-x: hidden;
   overflow-x: clip;
 }

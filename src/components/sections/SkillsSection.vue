@@ -35,7 +35,6 @@ import { skillGroups } from "../../data/skills.js";
   overflow: hidden;
   overflow: clip;
   background: rgb(var(--color-surface-rgb) / 0.94);
-  /* 前のセクションと --deco-angle の平行な切れ目をあけ、そこから 3D 背景が覗く */
   margin-top: calc(28px - var(--section-cut));
   padding: calc(var(--section-cut) + 3rem) 0 calc(var(--section-cut) + 3rem);
   clip-path: polygon(0 var(--section-cut), 100% 0, 100% calc(100% - var(--section-cut)), 0 100%);
@@ -49,7 +48,6 @@ import { skillGroups } from "../../data/skills.js";
 
 .skill-grid {
   display: grid;
-  /* auto-fit だと 3 列 + 1 枚余りになり、タグの多い INFRA に合わせて他が伸びる */
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1.5rem;
   list-style: none;
@@ -61,7 +59,6 @@ import { skillGroups } from "../../data/skills.js";
   border-radius: var(--card-radius);
   box-shadow: var(--card-shadow);
   padding: 1.6rem;
-  /* リビールは transform を使うので、hover は translate プロパティ側で当てて衝突を避ける */
   transition:
     box-shadow 0.18s ease,
     translate 0.18s ease;

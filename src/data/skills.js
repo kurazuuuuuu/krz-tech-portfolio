@@ -1,9 +1,5 @@
 import { convertWithTechIcons } from "../utils/techIcons.js";
 
-/*
- * level は旧 INTRODUCTION.txt の「技術領域」= MAIN /
- * 「メインじゃないけどよく使う技術」= SUB に対応する。
- */
 export const skillGroups = [
   {
     id: "backend",
