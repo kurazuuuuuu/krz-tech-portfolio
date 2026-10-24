@@ -8,7 +8,6 @@
     - SPARK (3DGSレンダー)
     <!-- - tsParticles -->
 - **Animation**:
-  - Lottie (アニメーション表示)
-  - Vanilla-tilt.js
+  - CSS Animations / Scroll-driven Animations (ライブラリ不使用)
 - **Icons**:
   - [tabler ICONS](https://tabler.io/icons) (SVG)
