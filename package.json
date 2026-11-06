@@ -9,7 +9,7 @@
     "sync:topaz": "node scripts/sync-topaz.mjs"
   },
   "dependencies": {
-    "@sparkjsdev/spark": "^2.2.0",
+    "@sparkjsdev/spark": "^2.4.0",
     "@tabler/icons-vue": "^3.47.0",
     "three": "^0.186.0",
     "vue": "^3.5.43"

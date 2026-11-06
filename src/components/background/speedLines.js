@@ -83,13 +83,11 @@ const vertexShader = `
 `;
 
 const fragmentShader = `
-  uniform vec3 uBgColor;
-
   varying vec3 vColor;
   varying float vFog;
 
   void main() {
-    gl_FragColor = vec4(mix(vColor, uBgColor, clamp(vFog, 0.0, 1.0)), 1.0);
+    gl_FragColor = vec4(vColor, 1.0 - clamp(vFog, 0.0, 1.0));
     #include <colorspace_fragment>
   }
 `;
@@ -101,16 +99,15 @@ export const createSpeedLines = (THREE, { camera, tuning, count, revealBand, mot
     uRevealBand: { value: revealBand },
     uRevealRange: { value: new THREE.Vector2(0, 1) },
     uFog: { value: new THREE.Vector2(tuning.lineFogNear, tuning.lineFogFar) },
-    uBgColor: { value: new THREE.Color(tuning.bgColor) },
   };
 
   const material = new THREE.ShaderMaterial({
     uniforms,
     vertexShader,
     fragmentShader,
-    transparent: false,
-    depthWrite: true,
-    depthTest: true,
+    transparent: true,
+    depthWrite: false,
+    depthTest: false,
     side: THREE.DoubleSide,
   });
 
@@ -228,7 +225,6 @@ export const createSpeedLines = (THREE, { camera, tuning, count, revealBand, mot
 
     applyTuning() {
       uniforms.uFog.value.set(tuning.lineFogNear, tuning.lineFogFar);
-      uniforms.uBgColor.value.set(tuning.bgColor);
     },
 
     rebuild,
