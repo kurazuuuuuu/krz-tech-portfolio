@@ -3,24 +3,6 @@ import { GUI } from "three/addons/libs/lil-gui.module.min.js";
 export const createDebugPanel = ({ tuning, quality, apply, rebuild }) => {
   const gui = new GUI({ title: "背景チューニング (?debug)" });
 
-  const points = gui.addFolder("点群 (インク)");
-  points.add(tuning, "inkDensity", 0.05, 1.0, 0.005).name("濃度").onChange(apply);
-  points.add(tuning, "pointSizeScale", 0.3, 5, 0.05).name("点サイズ倍率").onChange(apply);
-  points.add(tuning, "pointSoftness", 0, 1, 0.01).name("縁のぼかし").onChange(apply);
-  points.addColor(tuning, "colorA").name("色A (ビビッド)").onChange(apply);
-  points.addColor(tuning, "colorB").name("色B (ミント)").onChange(apply);
-  points
-    .add(tuning, "brightnessMode", { 明るい所ほど濃い: 1, 暗い所ほど濃い: 0 })
-    .name("輝度→濃度")
-    .onChange(apply);
-  points.add(tuning, "brightnessInfluence", 0, 1, 0.01).name("輝度の効き").onChange(apply);
-  points.add(tuning, "fogNear", 0, 60, 0.5).name("フォグ near (奥行き)").onChange(apply);
-  points.add(tuning, "fogFar", 0, 60, 0.5).name("フォグ far (奥行き)").onChange(apply);
-  points.add(tuning, "refPointPx", 0, 8, 0.1).name("大粒の抑制 基準px").onChange(apply);
-  points.add(tuning, "repelStrength", 0, 0.3, 0.005).name("マウス斥力").onChange(apply);
-  points.add(tuning, "wobbleStrength", 0, 0.05, 0.001).name("wobble").onChange(apply);
-  points.add(tuning, "parallaxScale", 0, 3, 0.05).name("パララックス量").onChange(apply);
-
   const lines = gui.addFolder("スピード線");
   lines.add(tuning.lineCount, quality, 0, 80, 1).name(`本数 (${quality})`).onChange(rebuild);
   lines.add(tuning, "lineAngleDeg", -90, 90, 0.5).name("基準角 (CSS deg)").onChange(rebuild);
@@ -46,7 +28,7 @@ export const createDebugPanel = ({ tuning, quality, apply, rebuild }) => {
   }
 
   const background = gui.addFolder("背景 / 描画");
-  background.addColor(tuning, "bgColor").name("背景色 (body と揃える)").onChange(apply);
+  background.add(tuning, "parallaxScale", 0, 3, 0.05).name("パララックス量");
   background
     .add(tuning, "idleFps", { "30fps (省電力)": 30, "60fps (滑らか)": 60 })
     .name("待機時 fps");
